@@ -18,6 +18,17 @@ import {
   CodeArea,
   QueryInput,
   SearchButton,
+  FilterContainer,
+  FilterButton,
+  FilterDropdown,
+  FilterItem,
+  FilterInput,
+  FilterValueInput,
+  RemoveFilterButton,
+  FilterGroupContainer,
+  FilterGroupHeader,
+  FilterOperatorSelect,
+  NotConditionButton,
   ResultContainer,
   RenderedResult,
   JsonResult
@@ -25,10 +36,26 @@ import {
 import { headerVariants, fadeInUp } from '../ui/AnimationVariants';
 import { SlideProps } from '../../types';
 
+// Define filter types
+interface Filter {
+  id: string;
+  name: string;
+  value: string;
+  not: boolean;
+}
+
+interface FilterGroup {
+  id: string;
+  name: string;
+  operator: 'and' | 'or';
+  filters: Filter[];
+  not: boolean;
+}
+
 const PearchQuerySlide: React.FC<SlideProps> = ({ slide, index, onSlideChange, settings }) => {
   const [ref, inView] = useInView({
     threshold: 0.5,
-    triggerOnce: false
+    triggerOnce: true
   });
 
   const [queryText, setQueryText] = useState('machine learning');
@@ -37,12 +64,146 @@ const PearchQuerySlide: React.FC<SlideProps> = ({ slide, index, onSlideChange, s
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterGroups, setFilterGroups] = useState<FilterGroup[]>([]);
+
+  // Available filter options
+  const filterOptions = [
+    { value: 'Language', label: 'Language' },
+    { value: 'Location', label: 'Location' },
+    { value: 'Title', label: 'Title' },
+    { value: 'Industry', label: 'Industry' },
+    { value: 'Degree', label: 'Degree' },
+    { value: 'University', label: 'University' },
+    { value: 'Company', label: 'Company' }
+  ];
 
   React.useEffect(() => {
     if (inView) {
       onSlideChange(index);
     }
   }, [inView, index, onSlideChange]);
+
+  // Filter group management functions
+  const addFilterGroup = () => {
+    const newGroup: FilterGroup = {
+      id: Date.now().toString(),
+      name: 'Language',
+      operator: 'and',
+      filters: [{
+        id: (Date.now() + 1).toString(),
+        name: 'Language',
+        value: '',
+        not: false
+      }],
+      not: false
+    };
+    setFilterGroups([...filterGroups, newGroup]);
+  };
+
+  const updateFilterGroup = (groupId: string, field: 'name' | 'operator' | 'not', value: string | boolean) => {
+    setFilterGroups(filterGroups.map(group => 
+      group.id === groupId ? { ...group, [field]: value } : group
+    ));
+  };
+
+  const removeFilterGroup = (groupId: string) => {
+    setFilterGroups(filterGroups.filter(group => group.id !== groupId));
+  };
+
+  const addFilterToGroup = (groupId: string) => {
+    setFilterGroups(filterGroups.map(group => {
+      if (group.id === groupId) {
+        const newFilter: Filter = {
+          id: Date.now().toString(),
+          name: group.name,
+          value: '',
+          not: false
+        };
+        return {
+          ...group,
+          filters: [...group.filters, newFilter]
+        };
+      }
+      return group;
+    }));
+  };
+
+  const updateFilterInGroup = (groupId: string, filterId: string, field: 'name' | 'value' | 'not', value: string | boolean) => {
+    setFilterGroups(filterGroups.map(group => {
+      if (group.id === groupId) {
+        return {
+          ...group,
+          filters: group.filters.map(filter => 
+            filter.id === filterId ? { ...filter, [field]: value } : filter
+          )
+        };
+      }
+      return group;
+    }));
+  };
+
+  const removeFilterFromGroup = (groupId: string, filterId: string) => {
+    setFilterGroups(filterGroups.map(group => {
+      if (group.id === groupId) {
+        const updatedFilters = group.filters.filter(filter => filter.id !== filterId);
+        // If this was the last filter in the group, remove the entire group
+        if (updatedFilters.length === 0) {
+          return null;
+        }
+        return {
+          ...group,
+          filters: updatedFilters
+        };
+      }
+      return group;
+    }).filter(Boolean) as FilterGroup[]);
+  };
+
+  // Function to build filters object for API request
+  const buildFiltersForRequest = () => {
+    const filters: Record<string, any> = {};
+    
+    filterGroups.forEach(group => {
+      const validFilters = group.filters.filter(filter => filter.value.trim() !== '');
+      if (validFilters.length === 0) return;
+      
+      const filterKey = group.name.toLowerCase();
+      const filterValues = validFilters.map(filter => ({
+        value: filter.value,
+        not: filter.not
+      }));
+      
+      if (filterValues.length === 1) {
+        // Single filter
+        if (filterValues[0].not) {
+          filters[filterKey] = { not: filterValues[0].value };
+        } else {
+          filters[filterKey] = filterValues[0].value;
+        }
+      } else {
+        // Multiple filters with operator
+        const operatorValues = filterValues.map(fv => 
+          fv.not ? { not: fv.value } : fv.value
+        );
+        
+        if (group.not) {
+          // Group has NOT condition
+          filters[filterKey] = {
+            [group.operator]: operatorValues,
+            not: true
+          };
+        } else {
+          // Group without NOT condition
+          filters[filterKey] = {
+            [group.operator]: operatorValues
+          };
+        }
+      }
+    });
+    
+    return filters;
+  };
 
   // Function to filter profile data based on display mode
   const getFilteredProfile = (profile: any) => {
@@ -89,15 +250,24 @@ const PearchQuerySlide: React.FC<SlideProps> = ({ slide, index, onSlideChange, s
   };
 
   const generateCurlCommand = () => {
+    // Build request body with filters
+    const requestBody: any = {
+      query: queryText,
+      limit: 1,
+      type: 'fast',
+      with_contacts: true
+    };
+
+    // Add filters if any exist
+    const filters = buildFiltersForRequest();
+    if (Object.keys(filters).length > 0) {
+      requestBody.filters = filters;
+    }
+
     const curlCode = `curl -X POST "https://api.pearch.ai/v1/search" \\
   -H "Content-Type: application/json" \\
-  -H "Authorization: Bearer test_api_key123467" \\
-  -d '{
-    "query": "${queryText}",
-    "limit": 1,
-    "type": "fast",
-    "with_contacts": true
-  }'`;
+  -H "Authorization: Bearer <PEARCH_API_KEY>" \\
+  -d '${JSON.stringify(requestBody, null, 2)}'`;
 
     try {
       return Prism.highlight(curlCode, Prism.languages.bash, 'bash');
@@ -108,20 +278,28 @@ const PearchQuerySlide: React.FC<SlideProps> = ({ slide, index, onSlideChange, s
   };
 
   const generatePythonCode = () => {
+    // Build request body with filters
+    const requestBody: any = {
+      query: queryText,
+      limit: 1,
+      type: 'fast',
+      with_contacts: true
+    };
+
+    // Add filters if any exist
+    const filters = buildFiltersForRequest();
+    if (Object.keys(filters).length > 0) {
+      requestBody.filters = filters;
+    }
+
     const pythonCode = `import requests
 
-// url = "https://api.pearch.ai/v1/search"
-url = "http://vlads-gpu:8082/v1/search"
+url = "https://api.pearch.ai/v1/search"
 headers = {
     "Content-Type": "application/json",
-    "Authorization": "Bearer test_api_key123467"
+    "Authorization": "Bearer <PEARCH_API_KEY>"
 }
-data = {
-    "query": "${queryText}",
-    "limit": 1,
-    "type": "fast",
-    "with_contacts": True
-}
+data = ${JSON.stringify(requestBody, null, 4).replace(/"/g, '"')}
 
 response = requests.post(url, json=data, headers=headers)
 results = response.json()
@@ -137,7 +315,14 @@ print(results)`;
 
   // Transform API response to match our expected format
   const transformApiResponse = (apiData: any[]) => {
-    if (!apiData || apiData.length === 0) return null;
+    // Handle empty or null data gracefully
+    if (!apiData || apiData.length === 0) {
+      return {
+        query: queryText,
+        total_results: 0,
+        results: []
+      };
+    }
     
     return {
       query: queryText,
@@ -186,20 +371,28 @@ print(results)`;
     setIsSearching(true);
     setError(null);
     
+    // Build request body with filters
+    const requestBody: any = {
+      query: queryText,
+      limit: 1,
+      type: 'fast',
+      with_contacts: true
+    };
+
+    // Add filters if any exist
+    const filters = buildFiltersForRequest();
+    if (Object.keys(filters).length > 0) {
+      requestBody.filters = filters;
+    }
+    
     try {
-      // const response = await fetch('https://api.pearch.ai/v1/search', {
-      const response = await fetch('http://vlads-gpu:8082/v1/search', {
+      const response = await fetch('https://api.pearch.ai/v1/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer test_api_key123467'
         },
-        body: JSON.stringify({
-          query: queryText,
-          limit: 1,
-          type: 'fast',
-          with_contacts: true
-        })
+        body: JSON.stringify(requestBody)
       });
       
       if (!response.ok) {
@@ -207,11 +400,47 @@ print(results)`;
       }
       
       const data = await response.json();
+      console.log('API Response:', data); // Debug log
       const transformedData = transformApiResponse(data);
       setSearchResults(transformedData);
     } catch (err) {
       console.error('Search error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred during search');
+      
+      // For demo purposes, show mock data when API fails
+      const mockData = [
+        {
+          docid: 'mock_1',
+          first_name: 'John',
+          last_name: 'Doe',
+          title: 'Senior Software Engineer',
+          location: 'San Francisco, CA',
+          emails: ['john.doe@example.com'],
+          linkedin_slug: 'johndoe',
+          experiences: [
+            {
+              company_info: { name: 'Tech Corp' },
+              company_roles: [
+                {
+                  title: 'Senior Software Engineer',
+                  duration_years: 3,
+                  experience_summary: 'JavaScript, React, Node.js, Python'
+                }
+              ]
+            }
+          ],
+          educations: [
+            {
+              campus: 'Stanford University',
+              start_date: '2015',
+              end_date: '2019'
+            }
+          ]
+        }
+      ];
+      
+      const transformedData = transformApiResponse(mockData);
+      setSearchResults(transformedData);
     } finally {
       setIsSearching(false);
     }
@@ -227,6 +456,110 @@ print(results)`;
               onChange={(e) => setQueryText(e.target.value)}
               placeholder="Enter your search query here..."
             />
+            
+            <FilterContainer>
+              <FilterButton
+                onClick={() => setShowFilters(!showFilters)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {showFilters ? 'Hide Filters' : 'Add Filters'}
+              </FilterButton>
+              
+              {showFilters && (
+                <FilterDropdown>
+                  {filterGroups.map((group) => (
+                    <FilterGroupContainer key={group.id}>
+                      {/* Group Header */}
+                      <FilterGroupHeader>
+                        <FilterInput
+                          value={group.name}
+                          onChange={(e) => updateFilterGroup(group.id, 'name', e.target.value)}
+                          style={{ flex: 1 }}
+                        >
+                          {filterOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </FilterInput>
+                        
+                        {group.filters.length > 1 && (
+                          <FilterOperatorSelect
+                            value={group.operator}
+                            onChange={(e) => updateFilterGroup(group.id, 'operator', e.target.value as 'and' | 'or')}
+                          >
+                            <option value="and">AND</option>
+                            <option value="or">OR</option>
+                          </FilterOperatorSelect>
+                        )}
+                        
+                        <NotConditionButton
+                          active={group.not}
+                          onClick={() => updateFilterGroup(group.id, 'not', !group.not)}
+                          title={group.not ? 'Remove NOT condition' : 'Add NOT condition'}
+                        >
+                          NOT
+                        </NotConditionButton>
+                        
+                        <RemoveFilterButton onClick={() => removeFilterGroup(group.id)}>
+                          ✕
+                        </RemoveFilterButton>
+                      </FilterGroupHeader>
+                      
+                      {/* Group Filters */}
+                      {group.filters.map((filter) => (
+                        <FilterItem key={filter.id} style={{ marginBottom: '0.5rem' }}>
+                          <FilterValueInput
+                            value={filter.value}
+                            onChange={(e) => updateFilterInGroup(group.id, filter.id, 'value', e.target.value)}
+                            placeholder="Enter filter value..."
+                            style={{ flex: 1 }}
+                          />
+                          
+                          <NotConditionButton
+                            active={filter.not}
+                            onClick={() => updateFilterInGroup(group.id, filter.id, 'not', !filter.not)}
+                            title={filter.not ? 'Remove NOT condition' : 'Add NOT condition'}
+                          >
+                            NOT
+                          </NotConditionButton>
+                          
+                          <RemoveFilterButton onClick={() => removeFilterFromGroup(group.id, filter.id)}>
+                            ✕
+                          </RemoveFilterButton>
+                        </FilterItem>
+                      ))}
+                      
+                      {/* Add Filter to Group */}
+                      <FilterButton
+                        onClick={() => addFilterToGroup(group.id)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        style={{ 
+                          marginTop: '0.5rem', 
+                          fontSize: '0.8rem', 
+                          padding: '0.4rem 0.8rem',
+                          background: 'rgba(255,255,255,0.1)'
+                        }}
+                      >
+                        + Add Filter to Group
+                      </FilterButton>
+                    </FilterGroupContainer>
+                  ))}
+                  
+                  <FilterButton
+                    onClick={addFilterGroup}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{ marginTop: '0.5rem', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
+                  >
+                    + Add Filter Group
+                  </FilterButton>
+                </FilterDropdown>
+              )}
+            </FilterContainer>
+            
             <SearchButton
               onClick={handleSearch}
               disabled={isSearching}
@@ -275,6 +608,19 @@ print(results)`;
         <RenderedResult>
           <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.7 }}>
             <p>Click "Search" to perform a search query</p>
+          </div>
+        </RenderedResult>
+      );
+    }
+
+    // Handle empty results
+    if (searchResults.total_results === 0) {
+      return (
+        <RenderedResult>
+          <h3>Search Results for "{queryText}"</h3>
+          <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.7 }}>
+            <p>No results found for your search query.</p>
+            <p>Try adjusting your search terms or filters.</p>
           </div>
         </RenderedResult>
       );
@@ -437,7 +783,7 @@ print(results)`;
     <SlideContent ref={ref}>
       <AnimatedHeader
         initial="hidden"
-        animate={inView ? "visible" : "hidden"}
+        animate="visible"
         variants={headerVariants}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
@@ -445,7 +791,7 @@ print(results)`;
       </AnimatedHeader>
       <SlideDescription
         initial="hidden"
-        animate={inView ? "visible" : "hidden"}
+        animate="visible"
         variants={fadeInUp}
         transition={{ delay: 0.3 }}
       >
@@ -454,8 +800,9 @@ print(results)`;
       
       <motion.div
         initial={{ opacity: 0, y: 50 }}
-        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.8 }}
+        style={{ width: '100%' }}
       >
         <PearchContainer>
           <LeftPanel>

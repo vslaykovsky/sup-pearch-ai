@@ -16,6 +16,7 @@ export const SlideSection = styled(motion.section)`
   padding: 2rem;
   position: relative;
   overflow: hidden;
+  padding-bottom: 4rem;
 `;
 
 export const SlideContent = styled.div`
@@ -24,18 +25,21 @@ export const SlideContent = styled.div`
   text-align: center;
   color: white;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 // Pearch.AI specific styled components
 export const PearchContainer = styled.div`
   display: flex;
   width: 100%;
-  height: 80vh;
+  min-height: 80vh;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  overflow: hidden;
+  overflow: visible;
 `;
 
 export const LeftPanel = styled.div`
@@ -224,12 +228,159 @@ export const SearchButton = styled(motion.button)`
   }
 `;
 
+export const FilterContainer = styled.div`
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+export const FilterButton = styled(motion.button)`
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+`;
+
+export const FilterDropdown = styled.div`
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  backdrop-filter: blur(10px);
+`;
+
+export const FilterItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+`;
+
+export const FilterInput = styled.select`
+  flex: 1;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: white;
+  font-size: 0.85rem;
+  
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  option {
+    background: #1a1a1a;
+    color: white;
+  }
+`;
+
+export const FilterValueInput = styled.input`
+  flex: 1;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: white;
+  font-size: 0.85rem;
+  
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+`;
+
+export const RemoveFilterButton = styled.button`
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 107, 107, 0.2);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 4px;
+  color: #ff6b6b;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(255, 107, 107, 0.3);
+    border-color: rgba(255, 107, 107, 0.5);
+  }
+`;
+
+export const FilterGroupContainer = styled.div`
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+`;
+
+export const FilterGroupHeader = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+`;
+
+export const FilterOperatorSelect = styled.select`
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  
+  option {
+    background: #1a1a1a;
+    color: white;
+  }
+`;
+
+export const NotConditionButton = styled.button<{ active: boolean }>`
+  background: ${props => props.active ? 'rgba(255,107,107,0.3)' : 'rgba(255,255,255,0.1)'};
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: ${props => props.active ? 'rgba(255,107,107,0.4)' : 'rgba(255,255,255,0.2)'};
+  }
+`;
+
 export const ResultContainer = styled.div`
   flex: 1;
   background: rgba(0, 0, 0, 0.3);
   border-radius: 8px;
   padding: 1rem;
-  overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.1);
 `;
 
