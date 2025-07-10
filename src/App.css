@@ -1,38 +1,129 @@
-.App {
-  text-align: center;
+/* Global styles for the scroll-based scrollytelling app */
+* {
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Progress indicator styles */
+.progress-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  z-index: 1000;
+}
+
+.progress-bar {
+  height: 100%;
+  background: white;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  transition: width 0.1s ease;
+}
+
+/* Slide counter styles */
+.slide-counter {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
   color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  transition: opacity 0.3s ease;
 }
 
-.App-link {
-  color: #61dafb;
+/* Responsive adjustments for scroll-based layout */
+@media (max-width: 768px) {
+  .slide-content h1 {
+    font-size: 2.5rem !important;
+  }
+  
+  .slide-content p {
+    font-size: 1.2rem !important;
+  }
+  
+  .feature-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .slide-counter {
+    bottom: 1rem !important;
+    right: 1rem !important;
+    font-size: 1rem !important;
+  }
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@media (max-width: 480px) {
+  .slide-content h1 {
+    font-size: 2rem !important;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .slide-content p {
+    font-size: 1rem !important;
   }
+  
+  .progress-indicator {
+    height: 3px !important;
+  }
+}
+
+/* Smooth scrolling for better performance */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Optimize for scroll performance */
+.slide-section {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Ensure proper stacking context */
+.slide-content {
+  position: relative;
+  z-index: 2;
+}
+
+.floating-element {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
 }

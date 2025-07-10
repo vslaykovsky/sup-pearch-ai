@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: supermarket-app
+  labels:
+    app: supermarket-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: supermarket-app
+  template:
+    metadata:
+      labels:
+        app: supermarket-app
+    spec:
+      containers:
+      - name: supermarket-app
+        image: us-central1-docker.pkg.dev/b4-app-632c7/psa/sup:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 101
+          capabilities:
+            drop:
+            - ALL
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: supermarket-service
+  labels:
+    app: supermarket-app
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  - port: 443
+    targetPort: 8080
+    protocol: TCP
+    name: https
+  selector:
+    app: supermarket-app
+  sessionAffinity: None 

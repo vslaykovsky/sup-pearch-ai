@@ -2,6 +2,27 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Docker Deployment
+
+### Manual Docker Build
+
+```bash
+# Build the Docker image
+docker build -t scrollytelling-app .
+
+# Run the container
+docker run -p 80:8080 scrollytelling-app
+
+# Access the application at http://localhost
+```
+
+### Security Features
+
+- **Non-privileged port**: Application runs on port 8080 inside the container
+- **Non-root user**: Nginx runs as user `nginx` (UID 101) for enhanced security
+- **Proper file permissions**: All files are owned by the nginx user
+- **Health checks**: Built-in health endpoint at `/health`
+
 ## Available Scripts
 
 In the project directory, you can run:
