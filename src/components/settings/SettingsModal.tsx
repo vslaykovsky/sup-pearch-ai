@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { 
   ModalOverlay, 
@@ -30,6 +30,7 @@ import {
 } from '../ui/StyledComponents';
 import { modalVariants } from '../ui/AnimationVariants';
 import { SettingsModalProps, PackagesConfig, PackageConfig } from '../../types';
+import { saveSettingsToStorage } from '../../utils/localStorage';
 
 const SettingsModal: React.FC<SettingsModalProps> = ({ 
   isOpen, 
@@ -39,29 +40,47 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [packageSettings, setPackageSettings] = useState<PackagesConfig>(settings.packages);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Update package settings when settings prop changes
+  useEffect(() => {
+    setPackageSettings(settings.packages);
+  }, [settings.packages]);
 
 
 
 
 
   const handleApiEndpointGroupChange = (groupKey: keyof typeof settings.apiEndpointGroups, checked: boolean) => {
-    onSettingsChange({
+    const newSettings = {
       ...settings,
       apiEndpointGroups: {
         ...settings.apiEndpointGroups,
         [groupKey]: checked
       }
-    });
+    };
+    onSettingsChange(newSettings);
+    
+    // Save to localStorage
+    setIsSaving(true);
+    saveSettingsToStorage(newSettings);
+    setTimeout(() => setIsSaving(false), 1000);
   };
 
   const handleProfileDisplayChange = (mode: 'linkedin_only' | 'contacts' | 'full_profile') => {
-    onSettingsChange({
+    const newSettings = {
       ...settings,
       profileDisplay: {
         ...settings.profileDisplay,
         mode
       }
-    });
+    };
+    onSettingsChange(newSettings);
+    
+    // Save to localStorage
+    setIsSaving(true);
+    saveSettingsToStorage(newSettings);
+    setTimeout(() => setIsSaving(false), 1000);
   };
 
   const handlePackageChange = (packageKey: keyof PackagesConfig, field: keyof PackageConfig, value: string | number) => {
@@ -77,11 +96,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleSavePackages = () => {
-    onSettingsChange({
+    const newSettings = {
       ...settings,
       packages: packageSettings
-    });
+    };
+    onSettingsChange(newSettings);
     setHasChanges(false);
+    
+    // Save to localStorage
+    setIsSaving(true);
+    saveSettingsToStorage(newSettings);
+    setTimeout(() => setIsSaving(false), 1000);
+  };
+
+  const handleClose = () => {
+    // If there are unsaved package changes, save them before closing
+    if (hasChanges) {
+      handleSavePackages();
+    }
+    onClose();
   };
 
   const formatNumber = (num: number) => {
@@ -100,7 +133,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onClick={onClose}
+          onClick={handleClose}
         >
           <ModalContent
             variants={modalVariants}
@@ -115,8 +148,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             onClick={(e) => e.stopPropagation()}
           >
             <ModalHeader>
-              <ModalTitle>Settings</ModalTitle>
-              <CloseButton onClick={onClose}>×</CloseButton>
+              <ModalTitle>
+                Settings
+                {isSaving && (
+                  <span style={{ 
+                    fontSize: '0.8rem', 
+                    marginLeft: '10px', 
+                    color: '#4CAF50',
+                    fontWeight: 'normal'
+                  }}>
+                    💾 Saving...
+                  </span>
+                )}
+              </ModalTitle>
+              <CloseButton onClick={handleClose}>×</CloseButton>
             </ModalHeader>
 
             <ApiEndpointsSection>

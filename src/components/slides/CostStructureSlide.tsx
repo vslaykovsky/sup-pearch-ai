@@ -156,7 +156,7 @@ const CompactPerCandidatePrice = styled.div`
   margin-bottom: 0.5rem;
 `;
 
-const CostStructureSlide: React.FC<SlideProps> = ({ slide, index, onSlideChange }) => {
+const CostStructureSlide: React.FC<SlideProps> = ({ slide, index, onSlideChange, settings }) => {
   const [ref, inView] = useInView({
     threshold: 0.5,
     triggerOnce: false
@@ -166,8 +166,8 @@ const CostStructureSlide: React.FC<SlideProps> = ({ slide, index, onSlideChange 
   const [searchVolume, setSearchVolume] = useState(50000);
   const [candidatesPerSearch, setCandidatesPerSearch] = useState(50);
 
-  // Default packages (these would come from settings in a real app)
-  const packages: Record<string, PackageConfig> = {
+  // Use packages from settings if available, otherwise use defaults
+  const packages = settings?.packages || {
     starter: {
       name: 'Starter',
       limit: 10000,

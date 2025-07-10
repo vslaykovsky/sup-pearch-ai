@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useScroll, useTransform } from 'framer-motion';
 import 'prismjs/themes/prism-tomorrow.css';
 import './App.css';
@@ -21,46 +21,18 @@ import SlideRenderer from './components/slides/SlideRenderer';
 // Import types and data
 import { AppSettings } from './types';
 import { slides } from './data/slides';
+import { loadSettingsFromStorage, saveSettingsToStorage } from './utils/localStorage';
 
 function App() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [settings, setSettings] = useState<AppSettings>({
-    animationsEnabled: true,
-    darkMode: false,
-    autoPlay: false,
-    animationSpeed: 1,
-    theme: 'default',
-    packages: {
-      starter: {
-        name: 'Starter',
-        limit: 10000,
-        monthlyPrice: 99,
-        perCandidatePrice: 0.01
-      },
-      professional: {
-        name: 'Professional',
-        limit: 100000,
-        monthlyPrice: 499,
-        perCandidatePrice: 0.005
-      },
-      enterprise: {
-        name: 'Enterprise',
-        limit: 1000000,
-        monthlyPrice: 1999,
-        perCandidatePrice: 0.002
-      }
-    },
-    apiEndpointGroups: {
-      search: true,
-      jobRecommendations: true,
-      customIndex: true,
-      profileEnrichment: true
-    },
-    profileDisplay: {
-      mode: 'full_profile'
-    }
-  });
+  const [settings, setSettings] = useState<AppSettings>(() => loadSettingsFromStorage());
+
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    const savedSettings = loadSettingsFromStorage();
+    setSettings(savedSettings);
+  }, []);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -76,6 +48,8 @@ function App() {
 
   const handleSettingsChange = (newSettings: AppSettings) => {
     setSettings(newSettings);
+    // Save settings to localStorage whenever they change
+    saveSettingsToStorage(newSettings);
   };
 
   return (
