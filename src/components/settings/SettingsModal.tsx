@@ -1,17 +1,11 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { 
   ModalOverlay, 
   ModalContent, 
   ModalHeader, 
   ModalTitle, 
   CloseButton,
-  SettingGroup,
-  SettingLabel,
-  ToggleSwitch,
-  Select,
-  RangeSlider,
-  RangeValue,
   PricingSection,
   PricingTitle,
   PackageCard,
@@ -46,26 +40,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [packageSettings, setPackageSettings] = useState<PackagesConfig>(settings.packages);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const handleToggle = (key: keyof Omit<typeof settings, 'packages'>) => {
-    onSettingsChange({
-      ...settings,
-      [key]: !settings[key]
-    });
-  };
 
-  const handleRangeChange = (key: keyof Omit<typeof settings, 'packages'>, value: number) => {
-    onSettingsChange({
-      ...settings,
-      [key]: value
-    });
-  };
 
-  const handleSelectChange = (key: keyof Omit<typeof settings, 'packages' | 'apiEndpointGroups'>, value: string) => {
-    onSettingsChange({
-      ...settings,
-      [key]: value
-    });
-  };
+
 
   const handleApiEndpointGroupChange = (groupKey: keyof typeof settings.apiEndpointGroups, checked: boolean) => {
     onSettingsChange({

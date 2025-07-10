@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import styled from 'styled-components';
@@ -9,18 +9,7 @@ import {
   PearchContainer,
   LeftPanel,
   RightPanel,
-  PanelTitle,
-  PackageCard,
-  PackageName,
-  PackagePrice,
-  PackageLimit,
-  PerCandidatePrice,
-  RangeSlider,
-  RangeValue,
-  Select,
-  FormField,
-  FormLabel
-} from '../ui/StyledComponents';
+  RangeValue} from '../ui/StyledComponents';
 import { headerVariants, fadeInUp, staggerContainer } from '../ui/AnimationVariants';
 import { SlideProps, PackageConfig } from '../../types';
 

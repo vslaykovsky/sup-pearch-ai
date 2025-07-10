@@ -1,12 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import {
   SlideContent,
-  AnimatedHeader,
-  FeatureGrid,
-  FeatureCard
-} from '../ui/StyledComponents';
+  AnimatedHeader} from '../ui/StyledComponents';
 import { headerVariants, staggerContainer, fadeInUp } from '../ui/AnimationVariants';
 import { SlideProps } from '../../types';
 import styled from 'styled-components';
