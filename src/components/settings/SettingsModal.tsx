@@ -119,8 +119,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               <CloseButton onClick={onClose}>×</CloseButton>
             </ModalHeader>
 
-
-
             <ApiEndpointsSection>
               <ApiEndpointsTitle>API Endpoint Groups</ApiEndpointsTitle>
               <ApiEndpointsDescription>
@@ -176,7 +174,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               </CheckboxContainer>
             </ApiEndpointsSection>
 
-            <ApiEndpointsSection>
+            <ApiEndpointsSection style={{ borderTop: '2px solid #f0f0f0' }}>
               <ApiEndpointsTitle>Profile Display Settings</ApiEndpointsTitle>
               <ApiEndpointsDescription>
                 Select what parts of profiles to show in search results

@@ -864,7 +864,6 @@ export const CheckboxLabel = styled.label`
 export const ApiEndpointsSection = styled.div`
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 2px solid #f0f0f0;
 `;
 
 export const ApiEndpointsTitle = styled.h3`
