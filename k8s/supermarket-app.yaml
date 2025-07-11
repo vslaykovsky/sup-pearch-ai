@@ -19,6 +19,9 @@ spec:
       - name: supermarket-app
         image: us-central1-docker.pkg.dev/b4-app-632c7/psa/sup:latest
         imagePullPolicy: Always
+        env:
+        - name: REACT_APP_PEARCH_API_URL
+          value: "https://api.pearch.ai/v1/search"
         ports:
         - containerPort: 8080
           name: http

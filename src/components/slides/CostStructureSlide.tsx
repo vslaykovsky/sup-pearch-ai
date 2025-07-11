@@ -11,7 +11,7 @@ import {
   RightPanel,
   RangeValue} from '../ui/StyledComponents';
 import { headerVariants, fadeInUp, staggerContainer } from '../ui/AnimationVariants';
-import { SlideProps, PackageConfig } from '../../types';
+import { SlideProps } from '../../types';
 
 // Cost breakdown item component
 const CostBreakdownItem = styled.div`

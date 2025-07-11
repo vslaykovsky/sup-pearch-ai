@@ -58,7 +58,7 @@ const PearchQuerySlide: React.FC<SlideProps> = ({ slide, index, onSlideChange, s
     triggerOnce: true
   });
 
-  const [queryText, setQueryText] = useState('machine learning');
+  const [queryText, setQueryText] = useState('Seeking a CEO who co-founded a $1B startup');
   const [leftTab, setLeftTab] = useState<'text' | 'curl' | 'python'>('text');
   const [rightTab, setRightTab] = useState<'rendered' | 'json'>('rendered');
   const [isSearching, setIsSearching] = useState(false);
@@ -264,7 +264,8 @@ const PearchQuerySlide: React.FC<SlideProps> = ({ slide, index, onSlideChange, s
       requestBody.filters = filters;
     }
 
-    const curlCode = `curl -X POST "https://api.pearch.ai/v1/search" \\
+    const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
+    const curlCode = `curl -X POST "${apiUrl}" \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer <PEARCH_API_KEY>" \\
   -d '${JSON.stringify(requestBody, null, 2)}'`;
@@ -292,9 +293,10 @@ const PearchQuerySlide: React.FC<SlideProps> = ({ slide, index, onSlideChange, s
       requestBody.filters = filters;
     }
 
+    const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
     const pythonCode = `import requests
 
-url = "https://api.pearch.ai/v1/search"
+url = "${apiUrl}"
 headers = {
     "Content-Type": "application/json",
     "Authorization": "Bearer <PEARCH_API_KEY>"
@@ -374,8 +376,9 @@ print(results)`;
     // Build request body with filters
     const requestBody: any = {
       query: queryText,
-      limit: 1,
+      limit: 10,
       type: 'fast',
+      pick_top1: true,
       with_contacts: true
     };
 
@@ -386,7 +389,8 @@ print(results)`;
     }
     
     try {
-      const response = await fetch('https://api.pearch.ai/v1/search', {
+      const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

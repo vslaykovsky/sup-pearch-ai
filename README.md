@@ -2,6 +2,16 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Environment Configuration
+
+To configure the Pearch API URL, create a `.env` file in the root directory with the following content:
+
+```bash
+REACT_APP_PEARCH_API_URL=https://api.pearch.ai/v1/search
+```
+
+**Note**: In React apps, environment variables must be prefixed with `REACT_APP_` to be accessible in the browser.
+
 ## Docker Deployment
 
 ### Manual Docker Build
