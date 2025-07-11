@@ -40,7 +40,13 @@ export const defaultSettings: AppSettings = {
   },
   queryOptions: {
     naturalLanguage: true,
-    filters: true
+    filters: true,
+    naturalLanguageMode: {
+      mode: 'advanced'
+    },
+    filterMode: {
+      mode: 'basic'
+    }
   },
   searchSpeed: {
     mode: 'fast'

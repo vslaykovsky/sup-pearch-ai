@@ -25,10 +25,22 @@ export interface ProfileDisplaySettings {
   mode: 'linkedin_only' | 'contacts' | 'full_profile';
 }
 
+// Natural Language Mode interface
+export interface NaturalLanguageMode {
+  mode: 'simple' | 'advanced' | 'expert';
+}
+
+// Filter Mode interface
+export interface FilterMode {
+  mode: 'basic' | 'advanced' | 'custom';
+}
+
 // Query Options interface
 export interface QueryOptions {
   naturalLanguage: boolean;
   filters: boolean;
+  naturalLanguageMode?: NaturalLanguageMode;
+  filterMode?: FilterMode;
 }
 
 // Search Speed interface

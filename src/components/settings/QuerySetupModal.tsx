@@ -30,8 +30,6 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [isSaving, setIsSaving] = useState(false);
 
-
-
   const handleQueryOptionChange = (option: 'naturalLanguage' | 'filters', checked: boolean) => {
     const newSettings = {
       ...settings,
@@ -216,7 +214,6 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
                 </RadioContainer>
               </RadioGroup>
             </ApiEndpointsSection>
-
 
           </ModalContent>
         </ModalOverlay>

@@ -75,16 +75,47 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
   const [showFilters, setShowFilters] = useState(false);
   const [filterGroups, setFilterGroups] = useState<FilterGroup[]>([]);
 
-  // Available filter options
-  const filterOptions = [
-    { value: 'Language', label: 'Language' },
-    { value: 'Location', label: 'Location' },
-    { value: 'Title', label: 'Title' },
-    { value: 'Industry', label: 'Industry' },
-    { value: 'Degree', label: 'Degree' },
-    { value: 'University', label: 'University' },
-    { value: 'Company', label: 'Company' }
-  ];
+  // Available filter options based on filter mode
+  const getFilterOptions = () => {
+    const filterMode = settings?.queryOptions?.filterMode?.mode || 'basic';
+    
+    const basicFilters = [
+      { value: 'Location', label: 'Location' },
+      { value: 'Title', label: 'Title' },
+      { value: 'Company', label: 'Company' },
+      { value: 'Industry', label: 'Industry' }
+    ];
+    
+    const advancedFilters = [
+      ...basicFilters,
+      { value: 'Language', label: 'Language' },
+      { value: 'Degree', label: 'Degree' },
+      { value: 'University', label: 'University' },
+      { value: 'Experience', label: 'Experience Level' },
+      { value: 'Skills', label: 'Skills' }
+    ];
+    
+    const customFilters = [
+      ...advancedFilters,
+      { value: 'Salary', label: 'Salary Range' },
+      { value: 'Remote', label: 'Remote Work' },
+      { value: 'Relocation', label: 'Relocation' },
+      { value: 'Visa', label: 'Visa Sponsorship' }
+    ];
+    
+    switch (filterMode) {
+      case 'basic':
+        return basicFilters;
+      case 'advanced':
+        return advancedFilters;
+      case 'custom':
+        return customFilters;
+      default:
+        return basicFilters;
+    }
+  };
+
+  const filterOptions = getFilterOptions();
 
   React.useEffect(() => {
     if (inView) {
@@ -266,10 +297,28 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
       with_contacts: true
     };
 
-    // Add filters if any exist
-    const filters = buildFiltersForRequest();
-    if (Object.keys(filters).length > 0) {
-      requestBody.filters = filters;
+    // Add natural language processing mode if enabled
+    if (settings?.queryOptions?.naturalLanguage) {
+      const nlMode = settings.queryOptions.naturalLanguageMode?.mode || 'advanced';
+      switch (nlMode) {
+        case 'simple':
+          requestBody.natural_language_mode = 'basic';
+          break;
+        case 'advanced':
+          requestBody.natural_language_mode = 'enhanced';
+          break;
+        case 'expert':
+          requestBody.natural_language_mode = 'expert';
+          break;
+      }
+    }
+
+    // Add filters if any exist and filters are enabled
+    if (settings?.queryOptions?.filters) {
+      const filters = buildFiltersForRequest();
+      if (Object.keys(filters).length > 0) {
+        requestBody.filters = filters;
+      }
     }
 
     const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
@@ -295,10 +344,28 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
       with_contacts: true
     };
 
-    // Add filters if any exist
-    const filters = buildFiltersForRequest();
-    if (Object.keys(filters).length > 0) {
-      requestBody.filters = filters;
+    // Add natural language processing mode if enabled
+    if (settings?.queryOptions?.naturalLanguage) {
+      const nlMode = settings.queryOptions.naturalLanguageMode?.mode || 'advanced';
+      switch (nlMode) {
+        case 'simple':
+          requestBody.natural_language_mode = 'basic';
+          break;
+        case 'advanced':
+          requestBody.natural_language_mode = 'enhanced';
+          break;
+        case 'expert':
+          requestBody.natural_language_mode = 'expert';
+          break;
+      }
+    }
+
+    // Add filters if any exist and filters are enabled
+    if (settings?.queryOptions?.filters) {
+      const filters = buildFiltersForRequest();
+      if (Object.keys(filters).length > 0) {
+        requestBody.filters = filters;
+      }
     }
 
     const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
@@ -390,10 +457,28 @@ print(results)`;
       with_contacts: true
     };
 
-    // Add filters if any exist
-    const filters = buildFiltersForRequest();
-    if (Object.keys(filters).length > 0) {
-      requestBody.filters = filters;
+    // Add natural language processing mode if enabled
+    if (settings?.queryOptions?.naturalLanguage) {
+      const nlMode = settings.queryOptions.naturalLanguageMode?.mode || 'advanced';
+      switch (nlMode) {
+        case 'simple':
+          requestBody.natural_language_mode = 'basic';
+          break;
+        case 'advanced':
+          requestBody.natural_language_mode = 'enhanced';
+          break;
+        case 'expert':
+          requestBody.natural_language_mode = 'expert';
+          break;
+      }
+    }
+
+    // Add filters if any exist and filters are enabled
+    if (settings?.queryOptions?.filters) {
+      const filters = buildFiltersForRequest();
+      if (Object.keys(filters).length > 0) {
+        requestBody.filters = filters;
+      }
     }
     
     try {
@@ -415,44 +500,9 @@ print(results)`;
       console.log('API Response:', data); // Debug log
       const transformedData = transformApiResponse(data);
       setSearchResults(transformedData);
-    } catch (err) {
-      console.error('Search error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred during search');
-      
-      // For demo purposes, show mock data when API fails
-      const mockData = [
-        {
-          docid: 'mock_1',
-          first_name: 'John',
-          last_name: 'Doe',
-          title: 'Senior Software Engineer',
-          location: 'San Francisco, CA',
-          emails: ['john.doe@example.com'],
-          linkedin_slug: 'johndoe',
-          experiences: [
-            {
-              company_info: { name: 'Tech Corp' },
-              company_roles: [
-                {
-                  title: 'Senior Software Engineer',
-                  duration_years: 3,
-                  experience_summary: 'JavaScript, React, Node.js, Python'
-                }
-              ]
-            }
-          ],
-          educations: [
-            {
-              campus: 'Stanford University',
-              start_date: '2015',
-              end_date: '2019'
-            }
-          ]
-        }
-      ];
-      
-      const transformedData = transformApiResponse(mockData);
-      setSearchResults(transformedData);
+    } catch (error) {
+      console.error('Search error:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred during search');
     } finally {
       setIsSearching(false);
     }
@@ -463,114 +513,135 @@ print(results)`;
       case 'text':
         return (
           <>
-            <QueryInput
-              value={queryText}
-              onChange={(e) => setQueryText(e.target.value)}
-              placeholder="Enter your search query here..."
-            />
+            {/* Natural Language Query Input - Only show if enabled */}
+            {settings?.queryOptions?.naturalLanguage && (
+              <QueryInput
+                value={queryText}
+                onChange={(e) => setQueryText(e.target.value)}
+                placeholder="Enter your search query here..."
+              />
+            )}
             
-            <FilterContainer>
-              <FilterButton
-                onClick={() => setShowFilters(!showFilters)}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {showFilters ? 'Hide Filters' : 'Add Filters'}
-              </FilterButton>
-              
-              {showFilters && (
-                <FilterDropdown>
-                  {filterGroups.map((group) => (
-                    <FilterGroupContainer key={group.id}>
-                      {/* Group Header */}
-                      <FilterGroupHeader>
-                        <FilterInput
-                          value={group.name}
-                          onChange={(e) => updateFilterGroup(group.id, 'name', e.target.value)}
-                          style={{ flex: 1 }}
-                        >
-                          {filterOptions.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </FilterInput>
-                        
-                        {group.filters.length > 1 && (
-                          <FilterOperatorSelect
-                            value={group.operator}
-                            onChange={(e) => updateFilterGroup(group.id, 'operator', e.target.value as 'and' | 'or')}
-                          >
-                            <option value="and">AND</option>
-                            <option value="or">OR</option>
-                          </FilterOperatorSelect>
-                        )}
-                        
-                        <NotConditionButton
-                          active={group.not}
-                          onClick={() => updateFilterGroup(group.id, 'not', !group.not)}
-                          title={group.not ? 'Remove NOT condition' : 'Add NOT condition'}
-                        >
-                          NOT
-                        </NotConditionButton>
-                        
-                        <RemoveFilterButton onClick={() => removeFilterGroup(group.id)}>
-                          ✕
-                        </RemoveFilterButton>
-                      </FilterGroupHeader>
-                      
-                      {/* Group Filters */}
-                      {group.filters.map((filter) => (
-                        <FilterItem key={filter.id} style={{ marginBottom: '0.5rem' }}>
-                          <FilterValueInput
-                            value={filter.value}
-                            onChange={(e) => updateFilterInGroup(group.id, filter.id, 'value', e.target.value)}
-                            placeholder="Enter filter value..."
+            {/* Filters - Only show if enabled */}
+            {settings?.queryOptions?.filters && (
+              <FilterContainer>
+                <FilterButton
+                  onClick={() => setShowFilters(!showFilters)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {showFilters ? 'Hide Filters' : 'Add Filters'}
+                </FilterButton>
+                
+                {showFilters && (
+                  <FilterDropdown>
+                    {filterGroups.map((group) => (
+                      <FilterGroupContainer key={group.id}>
+                        {/* Group Header */}
+                        <FilterGroupHeader>
+                          <FilterInput
+                            value={group.name}
+                            onChange={(e) => updateFilterGroup(group.id, 'name', e.target.value)}
                             style={{ flex: 1 }}
-                          />
+                          >
+                            {filterOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </FilterInput>
+                          
+                          {group.filters.length > 1 && (
+                            <FilterOperatorSelect
+                              value={group.operator}
+                              onChange={(e) => updateFilterGroup(group.id, 'operator', e.target.value as 'and' | 'or')}
+                            >
+                              <option value="and">AND</option>
+                              <option value="or">OR</option>
+                            </FilterOperatorSelect>
+                          )}
                           
                           <NotConditionButton
-                            active={filter.not}
-                            onClick={() => updateFilterInGroup(group.id, filter.id, 'not', !filter.not)}
-                            title={filter.not ? 'Remove NOT condition' : 'Add NOT condition'}
+                            active={group.not}
+                            onClick={() => updateFilterGroup(group.id, 'not', !group.not)}
+                            title={group.not ? 'Remove NOT condition' : 'Add NOT condition'}
                           >
                             NOT
                           </NotConditionButton>
                           
-                          <RemoveFilterButton onClick={() => removeFilterFromGroup(group.id, filter.id)}>
+                          <RemoveFilterButton onClick={() => removeFilterGroup(group.id)}>
                             ✕
                           </RemoveFilterButton>
-                        </FilterItem>
-                      ))}
-                      
-                      {/* Add Filter to Group */}
-                      <FilterButton
-                        onClick={() => addFilterToGroup(group.id)}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        style={{ 
-                          marginTop: '0.5rem', 
-                          fontSize: '0.8rem', 
-                          padding: '0.4rem 0.8rem',
-                          background: 'rgba(255,255,255,0.1)'
-                        }}
-                      >
-                        + Add Filter to Group
-                      </FilterButton>
-                    </FilterGroupContainer>
-                  ))}
-                  
-                  <FilterButton
-                    onClick={addFilterGroup}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    style={{ marginTop: '0.5rem', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
-                  >
-                    + Add Filter Group
-                  </FilterButton>
-                </FilterDropdown>
-              )}
-            </FilterContainer>
+                        </FilterGroupHeader>
+                        
+                        {/* Group Filters */}
+                        {group.filters.map((filter) => (
+                          <FilterItem key={filter.id} style={{ marginBottom: '0.5rem' }}>
+                            <FilterValueInput
+                              value={filter.value}
+                              onChange={(e) => updateFilterInGroup(group.id, filter.id, 'value', e.target.value)}
+                              placeholder="Enter filter value..."
+                              style={{ flex: 1 }}
+                            />
+                            
+                            <NotConditionButton
+                              active={filter.not}
+                              onClick={() => updateFilterInGroup(group.id, filter.id, 'not', !filter.not)}
+                              title={filter.not ? 'Remove NOT condition' : 'Add NOT condition'}
+                            >
+                              NOT
+                            </NotConditionButton>
+                            
+                            <RemoveFilterButton onClick={() => removeFilterFromGroup(group.id, filter.id)}>
+                              ✕
+                            </RemoveFilterButton>
+                          </FilterItem>
+                        ))}
+                        
+                        {/* Add Filter to Group */}
+                        <FilterButton
+                          onClick={() => addFilterToGroup(group.id)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          style={{ 
+                            marginTop: '0.5rem', 
+                            fontSize: '0.8rem', 
+                            padding: '0.4rem 0.8rem',
+                            background: 'rgba(255,255,255,0.1)'
+                          }}
+                        >
+                          + Add Filter to Group
+                        </FilterButton>
+                      </FilterGroupContainer>
+                    ))}
+                    
+                    <FilterButton
+                      onClick={addFilterGroup}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      style={{ marginTop: '0.5rem', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
+                    >
+                      + Add Filter Group
+                    </FilterButton>
+                  </FilterDropdown>
+                )}
+              </FilterContainer>
+            )}
+            
+            {/* Show message if no query options are enabled */}
+            {!settings?.queryOptions?.naturalLanguage && !settings?.queryOptions?.filters && (
+              <div style={{ 
+                padding: '1rem', 
+                background: 'rgba(255,255,255,0.05)', 
+                borderRadius: '8px', 
+                textAlign: 'center',
+                marginBottom: '1rem'
+              }}>
+                <p style={{ margin: 0, opacity: 0.8 }}>
+                  ⚙️ Please enable Natural Language Query or Filters in Query Setup settings
+                </p>
+              </div>
+            )}
             
             <SearchButton
               onClick={handleSearch}
