@@ -35,7 +35,7 @@ import {
   GearIcon
 } from '../ui/StyledComponents';
 import { headerVariants, fadeInUp } from '../ui/AnimationVariants';
-import { SlideProps } from '../../types';
+import { SlideProps, SearchResults } from '../../types';
 
 // Define filter types
 interface Filter {
@@ -244,21 +244,30 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
     return filters;
   };
 
-  // Function to filter profile data based on display mode
+  // Function to filter profile data based on display mode and search results settings
   const getFilteredProfile = (profile: any) => {
     if (!profile) return null;
     
     const displayMode = settings?.profileDisplay?.mode || 'full_profile';
+    const searchResultsSettings: SearchResults = settings?.searchResults || {
+      enrichedProfile: true,
+      businessEmails: true,
+      personalEmails: false,
+      mobilePhones: true
+    };
     
+    // First apply display mode filtering
+    let filteredProfile: any;
     switch (displayMode) {
       case 'linkedin_only':
-        return {
+        filteredProfile = {
           name: profile.name,
           title: profile.title,
           linkedin: profile.linkedin
         };
+        break;
       case 'contacts':
-        return {
+        filteredProfile = {
           name: profile.name,
           title: profile.title,
           summary: profile.summary,
@@ -267,10 +276,51 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
           phone: profile.phone,
           linkedin: profile.linkedin
         };
+        break;
       case 'full_profile':
       default:
-        return profile;
+        filteredProfile = { ...profile };
+        break;
     }
+    
+    // Then apply search results settings filtering
+    if (displayMode !== 'linkedin_only') {
+      // Filter enriched profile sections
+      if (!searchResultsSettings.enrichedProfile) {
+        // Remove enriched profile sections
+        delete filteredProfile.work_experience;
+        delete filteredProfile.education;
+        delete filteredProfile.skills;
+        delete filteredProfile.publications;
+        delete filteredProfile.patents;
+        delete filteredProfile.summary;
+      }
+      
+      // Filter email types
+      if (filteredProfile.email) {
+        const email = filteredProfile.email.toLowerCase();
+        const isBusinessEmail = email.includes('@') && (
+          email.includes('gmail.com') === false && 
+          email.includes('yahoo.com') === false && 
+          email.includes('hotmail.com') === false && 
+          email.includes('outlook.com') === false &&
+          email.includes('icloud.com') === false
+        );
+        
+        if (isBusinessEmail && !searchResultsSettings.businessEmails) {
+          delete filteredProfile.email;
+        } else if (!isBusinessEmail && !searchResultsSettings.personalEmails) {
+          delete filteredProfile.email;
+        }
+      }
+      
+      // Filter phone numbers
+      if (filteredProfile.phone && !searchResultsSettings.mobilePhones) {
+        delete filteredProfile.phone;
+      }
+    }
+    
+    return filteredProfile;
   };
 
   // Function to get filtered search results for JSON output
@@ -756,7 +806,7 @@ print(results)`;
                         </div>
                       )}
                       
-                      {filteredProfile.work_experience && (
+                      {filteredProfile.work_experience && filteredProfile.work_experience.length > 0 && (
                         <div style={{ marginBottom: '1rem' }}>
                           <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Work Experience</h6>
                           {filteredProfile.work_experience.map((exp: any, expIdx: number) => (
@@ -769,7 +819,7 @@ print(results)`;
                         </div>
                       )}
                       
-                      {filteredProfile.education && (
+                      {filteredProfile.education && filteredProfile.education.length > 0 && (
                         <div style={{ marginBottom: '1rem' }}>
                           <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Education</h6>
                           {filteredProfile.education.map((edu: any, eduIdx: number) => (
@@ -782,7 +832,7 @@ print(results)`;
                         </div>
                       )}
                       
-                      {filteredProfile.skills && (
+                      {filteredProfile.skills && filteredProfile.skills.length > 0 && (
                         <div style={{ marginBottom: '1rem' }}>
                           <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Skills</h6>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -801,7 +851,7 @@ print(results)`;
                         </div>
                       )}
                       
-                      {filteredProfile.publications && (
+                      {filteredProfile.publications && filteredProfile.publications.length > 0 && (
                         <div style={{ marginBottom: '1rem' }}>
                           <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Publications</h6>
                           {filteredProfile.publications.map((pub: string, pubIdx: number) => (
@@ -812,7 +862,7 @@ print(results)`;
                         </div>
                       )}
                       
-                      {filteredProfile.patents && (
+                      {filteredProfile.patents && filteredProfile.patents.length > 0 && (
                         <div>
                           <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Patents</h6>
                           {filteredProfile.patents.map((patent: string, patentIdx: number) => (
