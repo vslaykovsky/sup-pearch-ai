@@ -10,12 +10,32 @@ import { SlideProps, AppSettings } from '../../types';
 
 interface SlideRendererProps extends SlideProps {
   settings?: AppSettings;
+  onOpenQuerySetupModal?: () => void;
+  onOpenSearchResultsModal?: () => void;
+  onOpenCostStructureModal?: () => void;
+  onOpenApiEndpointsModal?: () => void;
 }
 
-const SlideRenderer: React.FC<SlideRendererProps> = ({ slide, index, onSlideChange, settings }) => {
+const SlideRenderer: React.FC<SlideRendererProps> = ({ 
+  slide, 
+  index, 
+  onSlideChange, 
+  settings,
+  onOpenQuerySetupModal,
+  onOpenSearchResultsModal,
+  onOpenCostStructureModal,
+  onOpenApiEndpointsModal
+}) => {
   switch (slide.type) {
     case 'pearch':
-      return <PearchQuerySlide slide={slide} index={index} onSlideChange={onSlideChange} settings={settings} />;
+      return <PearchQuerySlide 
+        slide={slide} 
+        index={index} 
+        onSlideChange={onSlideChange} 
+        settings={settings}
+        onOpenQuerySetupModal={onOpenQuerySetupModal}
+        onOpenSearchResultsModal={onOpenSearchResultsModal}
+      />;
     case 'welcome':
       return <WelcomeSlide slide={slide} index={index} onSlideChange={onSlideChange} settings={settings} />;
     case 'features':
@@ -25,9 +45,21 @@ const SlideRenderer: React.FC<SlideRendererProps> = ({ slide, index, onSlideChan
     case 'final':
       return <FinalSlide slide={slide} index={index} onSlideChange={onSlideChange} settings={settings} />;
     case 'cost':
-      return <CostStructureSlide slide={slide} index={index} onSlideChange={onSlideChange} settings={settings} />;
+      return <CostStructureSlide 
+        slide={slide} 
+        index={index} 
+        onSlideChange={onSlideChange} 
+        settings={settings}
+        onOpenCostStructureModal={onOpenCostStructureModal}
+      />;
     case 'api-endpoints':
-      return <ApiEndpointsSlide slide={slide} index={index} onSlideChange={onSlideChange} settings={settings} />;
+      return <ApiEndpointsSlide 
+        slide={slide} 
+        index={index} 
+        onSlideChange={onSlideChange} 
+        settings={settings}
+        onOpenApiEndpointsModal={onOpenApiEndpointsModal}
+      />;
     default:
       return <WelcomeSlide slide={slide} index={index} onSlideChange={onSlideChange} settings={settings} />;
   }

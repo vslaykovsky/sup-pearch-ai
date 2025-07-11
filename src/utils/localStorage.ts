@@ -37,6 +37,19 @@ export const defaultSettings: AppSettings = {
   },
   profileDisplay: {
     mode: 'full_profile'
+  },
+  queryOptions: {
+    naturalLanguage: true,
+    filters: true
+  },
+  searchSpeed: {
+    mode: 'fast'
+  },
+  searchResults: {
+    enrichedProfile: true,
+    businessEmails: true,
+    personalEmails: false,
+    mobilePhones: true
   }
 };
 
@@ -64,19 +77,31 @@ export const loadSettingsFromStorage = (): AppSettings => {
       const mergedSettings = {
         ...defaultSettings,
         ...parsedSettings,
-        // Ensure nested objects are properly merged
-        packages: {
-          ...defaultSettings.packages,
-          ...parsedSettings.packages
-        },
-        apiEndpointGroups: {
-          ...defaultSettings.apiEndpointGroups,
-          ...parsedSettings.apiEndpointGroups
-        },
-        profileDisplay: {
-          ...defaultSettings.profileDisplay,
-          ...parsedSettings.profileDisplay
-        }
+              // Ensure nested objects are properly merged
+      packages: {
+        ...defaultSettings.packages,
+        ...parsedSettings.packages
+      },
+      apiEndpointGroups: {
+        ...defaultSettings.apiEndpointGroups,
+        ...parsedSettings.apiEndpointGroups
+      },
+      profileDisplay: {
+        ...defaultSettings.profileDisplay,
+        ...parsedSettings.profileDisplay
+      },
+      queryOptions: {
+        ...defaultSettings.queryOptions,
+        ...parsedSettings.queryOptions
+      },
+      searchSpeed: {
+        ...defaultSettings.searchSpeed,
+        ...parsedSettings.searchSpeed
+      },
+      searchResults: {
+        ...defaultSettings.searchResults,
+        ...parsedSettings.searchResults
+      }
       };
       
       console.log('📋 Settings loaded from localStorage:', mergedSettings);

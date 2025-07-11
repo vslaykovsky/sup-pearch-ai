@@ -1,0 +1,194 @@
+import React, { useState, useEffect } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { 
+  ModalOverlay, 
+  ModalContent, 
+  ModalHeader, 
+  ModalTitle, 
+  CloseButton,
+  PricingSection,
+  PricingTitle,
+  PackageCard,
+  PackageForm,
+  FormField,
+  FormLabel,
+  FormInput,
+  SaveButton,
+  PackageHeader,
+  PackageTitle
+} from '../ui/StyledComponents';
+import { modalVariants } from '../ui/AnimationVariants';
+import { SettingsModalProps, PackagesConfig, PackageConfig } from '../../types';
+import { saveSettingsToStorage } from '../../utils/localStorage';
+
+const CostStructureModal: React.FC<SettingsModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  settings, 
+  onSettingsChange 
+}) => {
+  const [packageSettings, setPackageSettings] = useState<PackagesConfig>(settings.packages);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Update package settings when settings prop changes
+  useEffect(() => {
+    setPackageSettings(settings.packages);
+  }, [settings.packages]);
+
+  const handlePackageChange = (packageKey: keyof PackagesConfig, field: keyof PackageConfig, value: string | number) => {
+    const newPackageSettings = {
+      ...packageSettings,
+      [packageKey]: {
+        ...packageSettings[packageKey],
+        [field]: field === 'limit' || field === 'monthlyPrice' || field === 'perCandidatePrice' ? Number(value) : value
+      }
+    };
+    setPackageSettings(newPackageSettings);
+    setHasChanges(true);
+  };
+
+  const handleSavePackages = () => {
+    const newSettings = {
+      ...settings,
+      packages: packageSettings
+    };
+    onSettingsChange(newSettings);
+    setHasChanges(false);
+    
+    // Save to localStorage
+    setIsSaving(true);
+    saveSettingsToStorage(newSettings);
+    setTimeout(() => setIsSaving(false), 1000);
+  };
+
+  const handleClose = () => {
+    // If there are unsaved package changes, save them before closing
+    if (hasChanges) {
+      handleSavePackages();
+    }
+    onClose();
+  };
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return `${(num / 1000000).toFixed(1)}M`;
+    } else if (num >= 1000) {
+      return `${(num / 1000).toFixed(0)}k`;
+    }
+    return num.toString();
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <ModalOverlay
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleClose}
+        >
+          <ModalContent
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={{
+              type: "spring",
+              damping: 25,
+              stiffness: 300
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ModalHeader>
+              <ModalTitle>
+                Cost Structure & Pricing Settings
+                {isSaving && (
+                  <span style={{ 
+                    fontSize: '0.8rem', 
+                    marginLeft: '10px', 
+                    color: '#4CAF50',
+                    fontWeight: 'normal'
+                  }}>
+                    💾 Saving...
+                  </span>
+                )}
+              </ModalTitle>
+              <CloseButton onClick={handleClose}>×</CloseButton>
+            </ModalHeader>
+
+            <PricingSection>
+              <PricingTitle>Package Pricing Configuration</PricingTitle>
+              
+              {Object.entries(packageSettings).map(([packageKey, packageData]) => (
+                <PackageCard key={packageKey} style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
+                  <PackageHeader>
+                    <PackageTitle>{packageData.name}</PackageTitle>
+                  </PackageHeader>
+                  
+                  <PackageForm>
+                    <FormField>
+                      <FormLabel>Package Name</FormLabel>
+                      <FormInput
+                        type="text"
+                        value={packageData.name}
+                        onChange={(e) => handlePackageChange(packageKey as keyof PackagesConfig, 'name', e.target.value)}
+                      />
+                    </FormField>
+                    
+                    <FormField>
+                      <FormLabel>Profile Limit</FormLabel>
+                      <FormInput
+                        type="number"
+                        value={packageData.limit}
+                        onChange={(e) => handlePackageChange(packageKey as keyof PackagesConfig, 'limit', e.target.value)}
+                        placeholder="e.g., 10000"
+                      />
+                    </FormField>
+                    
+                    <FormField>
+                      <FormLabel>Monthly Price ($)</FormLabel>
+                      <FormInput
+                        type="number"
+                        value={packageData.monthlyPrice}
+                        onChange={(e) => handlePackageChange(packageKey as keyof PackagesConfig, 'monthlyPrice', e.target.value)}
+                        placeholder="e.g., 99"
+                      />
+                    </FormField>
+                    
+                    <FormField>
+                      <FormLabel>Per Candidate Price ($)</FormLabel>
+                      <FormInput
+                        type="number"
+                        step="0.001"
+                        value={packageData.perCandidatePrice}
+                        onChange={(e) => handlePackageChange(packageKey as keyof PackagesConfig, 'perCandidatePrice', e.target.value)}
+                        placeholder="e.g., 0.01"
+                      />
+                    </FormField>
+                  </PackageForm>
+                  
+                  <div style={{ marginTop: '1rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px', fontSize: '0.9rem' }}>
+                    <div><strong>Preview:</strong> {packageData.name} - Under {formatNumber(packageData.limit)} profiles</div>
+                    <div>${packageData.monthlyPrice}/month - ${packageData.perCandidatePrice} per additional candidate</div>
+                  </div>
+                </PackageCard>
+              ))}
+              
+              <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                <SaveButton 
+                  onClick={handleSavePackages}
+                  disabled={!hasChanges}
+                >
+                  {hasChanges ? 'Save Package Changes' : 'No Changes'}
+                </SaveButton>
+              </div>
+            </PricingSection>
+          </ModalContent>
+        </ModalOverlay>
+      )}
+    </AnimatePresence>
+  );
+};
+
+export default CostStructureModal; 

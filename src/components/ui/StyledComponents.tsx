@@ -63,6 +63,9 @@ export const PanelTitle = styled.h2`
   font-weight: 600;
   margin-bottom: 1.5rem;
   color: white;
+  display: flex;
+  align-items: center;
+  position: relative;
 `;
 
 export const TabContainer = styled.div`
@@ -551,6 +554,35 @@ export const SettingsButton = styled(motion.button)`
   &:hover {
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
+  }
+`;
+
+export const GearIcon = styled(motion.button)`
+  position: relative;
+  width: auto;
+  height: auto;
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-right: 0.5rem;
+  padding: 0.2rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+  }
+  
+  svg {
+    width: 1.6rem;
+    height: 1.6rem;
   }
 `;
 

@@ -13,4 +13,8 @@ export { default as CostStructureSlide } from './slides/CostStructureSlide';
 export { default as ApiEndpointsSlide } from './slides/ApiEndpointsSlide';
 
 // Settings Components
-export { default as SettingsModal } from './settings/SettingsModal'; 
+export { default as SettingsModal } from './settings/SettingsModal';
+export { default as QuerySetupModal } from './settings/QuerySetupModal';
+export { default as SearchResultsModal } from './settings/SearchResultsModal';
+export { default as CostStructureModal } from './settings/CostStructureModal';
+export { default as ApiEndpointsModal } from './settings/ApiEndpointsModal'; 
