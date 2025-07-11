@@ -36,6 +36,12 @@ docker build -t $IMAGE_NAME:$IMAGE_TAG .
 echo -e "${YELLOW}Pushing Docker image to registry...${NC}"
 docker push $IMAGE_NAME:$IMAGE_TAG
 
+
+# Delete existing deployment if it exists
+echo -e "${YELLOW}Deleting existing deployment if it exists...${NC}"
+kubectl delete deployment $APP_NAME --ignore-not-found=true
+
+
 # Apply Deployment and Service
 echo -e "${YELLOW}Applying Deployment and Service...${NC}"
 kubectl apply -f k8s/supermarket-app.yaml
