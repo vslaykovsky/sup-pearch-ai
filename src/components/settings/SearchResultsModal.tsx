@@ -25,7 +25,7 @@ const SearchResultsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSearchResultOptionChange = (option: 'enrichedProfile' | 'businessEmails' | 'personalEmails' | 'mobilePhones', checked: boolean) => {
+  const handleSearchResultOptionChange = (option: 'linkedinProfileUrl' | 'fullJson' | 'matchingInsights' | 'enrichedCompanyData' | 'enrichedProfile' | 'businessEmails' | 'personalEmails' | 'phoneNumbers', checked: boolean) => {
     const newSettings = {
       ...settings,
       searchResults: {
@@ -80,10 +80,55 @@ const SearchResultsModal: React.FC<SettingsModalProps> = ({
             </ModalHeader>
 
             <ApiEndpointsSection>
-              <ApiEndpointsTitle>Search Results Configuration</ApiEndpointsTitle>
-              <ApiEndpointsDescription>
-                Configure what information to include in search results
-              </ApiEndpointsDescription>
+              <ApiEndpointsTitle>Select Data to Get</ApiEndpointsTitle>
+              
+              <CheckboxContainer>
+                <Checkbox
+                  type="checkbox"
+                  id="linkedinProfileUrl"
+                  checked={settings.searchResults?.linkedinProfileUrl ?? true}
+                  onChange={(e) => handleSearchResultOptionChange('linkedinProfileUrl', e.target.checked)}
+                />
+                <CheckboxLabel htmlFor="linkedinProfileUrl">
+                  🔗 LinkedIn Profile URL
+                </CheckboxLabel>
+              </CheckboxContainer>
+              
+              <CheckboxContainer>
+                <Checkbox
+                  type="checkbox"
+                  id="fullJson"
+                  checked={settings.searchResults?.fullJson ?? false}
+                  onChange={(e) => handleSearchResultOptionChange('fullJson', e.target.checked)}
+                />
+                <CheckboxLabel htmlFor="fullJson">
+                  📄 Full JSON
+                </CheckboxLabel>
+              </CheckboxContainer>
+              
+              <CheckboxContainer>
+                <Checkbox
+                  type="checkbox"
+                  id="matchingInsights"
+                  checked={settings.searchResults?.matchingInsights ?? true}
+                  onChange={(e) => handleSearchResultOptionChange('matchingInsights', e.target.checked)}
+                />
+                <CheckboxLabel htmlFor="matchingInsights">
+                  💡 Matching Insights
+                </CheckboxLabel>
+              </CheckboxContainer>
+              
+              <CheckboxContainer>
+                <Checkbox
+                  type="checkbox"
+                  id="enrichedCompanyData"
+                  checked={settings.searchResults?.enrichedCompanyData ?? true}
+                  onChange={(e) => handleSearchResultOptionChange('enrichedCompanyData', e.target.checked)}
+                />
+                <CheckboxLabel htmlFor="enrichedCompanyData">
+                  🏢 Enriched Company Data
+                </CheckboxLabel>
+              </CheckboxContainer>
               
               <CheckboxContainer>
                 <Checkbox
@@ -124,12 +169,12 @@ const SearchResultsModal: React.FC<SettingsModalProps> = ({
               <CheckboxContainer>
                 <Checkbox
                   type="checkbox"
-                  id="mobilePhones"
-                  checked={settings.searchResults?.mobilePhones ?? true}
-                  onChange={(e) => handleSearchResultOptionChange('mobilePhones', e.target.checked)}
+                  id="phoneNumbers"
+                  checked={settings.searchResults?.phoneNumbers ?? true}
+                  onChange={(e) => handleSearchResultOptionChange('phoneNumbers', e.target.checked)}
                 />
-                <CheckboxLabel htmlFor="mobilePhones">
-                  📱 Mobile Phones
+                <CheckboxLabel htmlFor="phoneNumbers">
+                  📱 Phone Numbers
                 </CheckboxLabel>
               </CheckboxContainer>
             </ApiEndpointsSection>

@@ -16,7 +16,9 @@ import {
   RadioDescription,
   CheckboxContainer,
   Checkbox,
-  CheckboxLabel
+  CheckboxLabel,
+  RangeSlider,
+  RangeValue
 } from '../ui/StyledComponents';
 import { modalVariants } from '../ui/AnimationVariants';
 import { SettingsModalProps } from '../../types';
@@ -53,6 +55,19 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
         ...settings.searchSpeed,
         mode: speed
       }
+    };
+    onSettingsChange(newSettings);
+    
+    // Save to localStorage
+    setIsSaving(true);
+    saveSettingsToStorage(newSettings);
+    setTimeout(() => setIsSaving(false), 1000);
+  };
+
+  const handleResultLimitChange = (limit: number) => {
+    const newSettings = {
+      ...settings,
+      resultLimit: limit
     };
     onSettingsChange(newSettings);
     
@@ -101,7 +116,7 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
             </ModalHeader>
 
             <ApiEndpointsSection>
-              <ApiEndpointsTitle>Query Options</ApiEndpointsTitle>
+              <ApiEndpointsTitle>Search Input Types</ApiEndpointsTitle>
               <ApiEndpointsDescription>
                 Configure how queries are processed and filtered
               </ApiEndpointsDescription>
@@ -132,7 +147,39 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
             </ApiEndpointsSection>
 
             <ApiEndpointsSection style={{ borderTop: '2px solid #f0f0f0' }}>
-              <ApiEndpointsTitle>Search Speed & Quality</ApiEndpointsTitle>
+              <ApiEndpointsTitle>Limit Number of Results</ApiEndpointsTitle>
+              <ApiEndpointsDescription>
+                Set the maximum number of results returned per search
+              </ApiEndpointsDescription>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
+                <RangeSlider
+                  type="range"
+                  min="10"
+                  max="10000"
+                  step="10"
+                  value={settings.resultLimit ?? 100}
+                  onChange={(e) => handleResultLimitChange(parseInt(e.target.value))}
+                  style={{
+                    flex: 1,
+                    height: '8px',
+                    borderRadius: '4px',
+                    background: 'rgba(102, 126, 234, 0.2)',
+                    outline: 'none',
+                    cursor: 'pointer'
+                  }}
+                />
+                <RangeValue>{settings.resultLimit ?? 100}</RangeValue>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.5rem', fontSize: '0.8rem', color: '#666' }}>
+                <span>10</span>
+                <span>10,000</span>
+              </div>
+            </ApiEndpointsSection>
+
+            <ApiEndpointsSection style={{ borderTop: '2px solid #f0f0f0' }}>
+              <ApiEndpointsTitle>Relevance/Speed Trade-Off</ApiEndpointsTitle>
               <ApiEndpointsDescription>
                 Choose the balance between speed and quality for your searches
               </ApiEndpointsDescription>
@@ -148,8 +195,8 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
                     onChange={() => handleSearchSpeedChange('super_fast')}
                   />
                   <RadioLabel htmlFor="super_fast">
-                    Super Fast (2–15 sec) - moderate quality
-                    <RadioDescription>Quick results with basic semantic matching</RadioDescription>
+                    Super Fast
+                    <RadioDescription>(2–15 sec) - moderate quality.</RadioDescription>
                   </RadioLabel>
                 </RadioContainer>
                 
@@ -163,8 +210,8 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
                     onChange={() => handleSearchSpeedChange('fast')}
                   />
                   <RadioLabel htmlFor="fast">
-                    Fast (30–60 sec) - good quality
-                    <RadioDescription>Balanced speed and quality for most use cases</RadioDescription>
+                    Fast
+                    <RadioDescription>(30–60 sec) - good quality.</RadioDescription>
                   </RadioLabel>
                 </RadioContainer>
                 
@@ -178,8 +225,8 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
                     onChange={() => handleSearchSpeedChange('deep_research')}
                   />
                   <RadioLabel htmlFor="deep_research">
-                    Deep research (3–10 min) - great quality
-                    <RadioDescription>Comprehensive analysis with highest accuracy</RadioDescription>
+                    Deep research
+                    <RadioDescription>(3–10 min) - great quality.</RadioDescription>
                   </RadioLabel>
                 </RadioContainer>
                 
@@ -193,8 +240,8 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
                     onChange={() => handleSearchSpeedChange('auto_mode')}
                   />
                   <RadioLabel htmlFor="auto_mode">
-                    Auto-mode (2 sec to 10 min) - let AI decide
-                    <RadioDescription>AI automatically chooses the best approach</RadioDescription>
+                    Auto-mode
+                    <RadioDescription>(2 sec to 10 min) - let AI decide.</RadioDescription>
                   </RadioLabel>
                 </RadioContainer>
                 
@@ -208,8 +255,8 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
                     onChange={() => handleSearchSpeedChange('custom')}
                   />
                   <RadioLabel htmlFor="custom">
-                    Custom - built for your unique use case
-                    <RadioDescription>Tailored configuration for specific requirements</RadioDescription>
+                    Custom
+                    <RadioDescription>Built for your unique use case.</RadioDescription>
                   </RadioLabel>
                 </RadioContainer>
               </RadioGroup>

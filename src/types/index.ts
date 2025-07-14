@@ -50,10 +50,14 @@ export interface SearchSpeed {
 
 // Search Results interface
 export interface SearchResults {
+  linkedinProfileUrl: boolean;
+  fullJson: boolean;
+  matchingInsights: boolean;
+  enrichedCompanyData: boolean;
   enrichedProfile: boolean;
   businessEmails: boolean;
   personalEmails: boolean;
-  mobilePhones: boolean;
+  phoneNumbers: boolean;
 }
 
 // Settings interface
@@ -69,6 +73,7 @@ export interface AppSettings {
   queryOptions: QueryOptions;
   searchSpeed: SearchSpeed;
   searchResults: SearchResults;
+  resultLimit?: number;
 }
 
 // Slide interface

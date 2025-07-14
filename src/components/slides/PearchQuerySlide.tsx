@@ -250,10 +250,14 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
     
     const displayMode = settings?.profileDisplay?.mode || 'full_profile';
     const searchResultsSettings: SearchResults = settings?.searchResults || {
+      linkedinProfileUrl: true,
+      fullJson: false,
+      matchingInsights: true,
+      enrichedCompanyData: true,
       enrichedProfile: true,
       businessEmails: true,
       personalEmails: false,
-      mobilePhones: true
+      phoneNumbers: true
     };
     
     // First apply display mode filtering
@@ -283,18 +287,36 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
         break;
     }
     
-    // Then apply search results settings filtering
-    if (displayMode !== 'linkedin_only') {
-      // Filter enriched profile sections
-      if (!searchResultsSettings.enrichedProfile) {
-        // Remove enriched profile sections
-        delete filteredProfile.work_experience;
-        delete filteredProfile.education;
-        delete filteredProfile.skills;
-        delete filteredProfile.publications;
-        delete filteredProfile.patents;
-        delete filteredProfile.summary;
-      }
+          // Then apply search results settings filtering
+      if (displayMode !== 'linkedin_only') {
+        // Filter LinkedIn Profile URL
+        if (!searchResultsSettings.linkedinProfileUrl) {
+          delete filteredProfile.linkedin;
+        }
+        
+        // Filter enriched profile sections
+        if (!searchResultsSettings.enrichedProfile) {
+          // Remove enriched profile sections
+          delete filteredProfile.work_experience;
+          delete filteredProfile.education;
+          delete filteredProfile.skills;
+          delete filteredProfile.publications;
+          delete filteredProfile.patents;
+          delete filteredProfile.summary;
+        }
+        
+        // Filter enriched company data
+        if (!searchResultsSettings.enrichedCompanyData) {
+          delete filteredProfile.company_data;
+          delete filteredProfile.company_info;
+        }
+        
+        // Filter matching insights
+        if (!searchResultsSettings.matchingInsights) {
+          delete filteredProfile.matching_score;
+          delete filteredProfile.matching_reasons;
+          delete filteredProfile.insights;
+        }
       
       // Filter email types
       if (filteredProfile.email) {
@@ -315,7 +337,7 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
       }
       
       // Filter phone numbers
-      if (filteredProfile.phone && !searchResultsSettings.mobilePhones) {
+      if (filteredProfile.phone && !searchResultsSettings.phoneNumbers) {
         delete filteredProfile.phone;
       }
     }
@@ -327,10 +349,32 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
   const getFilteredSearchResults = () => {
     if (!searchResults) return null;
     
-    const filteredResults = searchResults.results.map((result: any) => ({
+    const searchResultsSettings: SearchResults = settings?.searchResults || {
+      linkedinProfileUrl: true,
+      fullJson: false,
+      matchingInsights: true,
+      enrichedCompanyData: true,
+      enrichedProfile: true,
+      businessEmails: true,
+      personalEmails: false,
+      phoneNumbers: true
+    };
+    
+    let filteredResults = searchResults.results.map((result: any) => ({
       ...result,
       profile: result.profile ? getFilteredProfile(result.profile) : undefined
     }));
+    
+    // If full JSON is disabled, only return essential fields
+    if (!searchResultsSettings.fullJson) {
+      filteredResults = filteredResults.map((result: any) => ({
+        id: result.id,
+        title: result.title,
+        content: result.content,
+        score: result.score,
+        profile: result.profile
+      }));
+    }
     
     return {
       ...searchResults,
@@ -939,19 +983,20 @@ print(results)`;
       >
         <PearchContainer>
           <LeftPanel>
-            <PanelTitle>
+            <PanelTitle style={{ display: 'flex', alignItems: 'center' }}>
+              <span>Query Setup</span>
               {onOpenQuerySetupModal && (
                 <GearIcon
                   onClick={onOpenQuerySetupModal}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
+                  style={{ marginLeft: '0.5rem' }}
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.22-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65z"/>
                   </svg>
                 </GearIcon>
               )}
-              Query Setup
             </PanelTitle>
             <TabContainer>
               <Tab 
@@ -977,19 +1022,20 @@ print(results)`;
           </LeftPanel>
           
           <RightPanel>
-            <PanelTitle>
+            <PanelTitle style={{ display: 'flex', alignItems: 'center' }}>
+              <span>Search Results</span>
               {onOpenSearchResultsModal && (
                 <GearIcon
                   onClick={onOpenSearchResultsModal}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
+                  style={{ marginLeft: '0.5rem' }}
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.22-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98 0 .33.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65z"/>
                   </svg>
                 </GearIcon>
               )}
-              Search Results
             </PanelTitle>
             <TabContainer>
               <Tab 

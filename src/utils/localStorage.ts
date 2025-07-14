@@ -52,10 +52,14 @@ export const defaultSettings: AppSettings = {
     mode: 'fast'
   },
   searchResults: {
+    linkedinProfileUrl: true,
+    fullJson: false,
+    matchingInsights: true,
+    enrichedCompanyData: true,
     enrichedProfile: true,
     businessEmails: true,
     personalEmails: false,
-    mobilePhones: true
+    phoneNumbers: true
   }
 };
 
