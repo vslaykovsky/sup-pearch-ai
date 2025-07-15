@@ -863,7 +863,7 @@ print(results)`;
                 opacity: 0.8,
                 color: '#fff'
               }}>
-                Mode: {getSearchSpeedReadableName(settings?.searchSpeed?.mode)}. Found {searchResults.total_estimate} results. Showing {searchResults.search_results?.length || 0} profiles
+                Mode: {getSearchSpeedReadableName(settings?.searchSpeed?.mode)}. Found {settings?.resultLimit} results. Showing {searchResults.search_results?.length || 0} profiles
               </p>
             )}            
             <ResultContainer>
