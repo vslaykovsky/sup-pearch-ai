@@ -21,7 +21,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: REACT_APP_PEARCH_API_URL
-          value: "https://api.pearch.ai/v1/search"
+          value: "https://api.pearch.ai/v2/search"
         ports:
         - containerPort: 8080
           name: http

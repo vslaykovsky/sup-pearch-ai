@@ -391,7 +391,7 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
     // Build request body with filters
     const requestBody = buildRequestBody(1);
 
-    const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
+    const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v2/search';
     const curlCode = `curl -X POST "${apiUrl}" \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer <PEARCH_API_KEY>" \\
@@ -409,7 +409,7 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
     // Build request body with filters
     const requestBody = buildRequestBody(1);
 
-    const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
+    const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v2/search';
     const pythonCode = `import requests
 
 url = "${apiUrl}"
@@ -450,7 +450,7 @@ print(results)`;
     const requestBody = buildRequestBody(1);
     
     try {
-      const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
+      const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v2/search';
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
