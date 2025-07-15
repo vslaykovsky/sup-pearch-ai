@@ -20,7 +20,7 @@ export const SlideSection = styled(motion.section)`
 `;
 
 export const SlideContent = styled.div`
-  max-width: 1200px;
+  max-width: 1600px;
   width: 100%;
   text-align: center;
   color: white;

@@ -15,7 +15,9 @@ const ProfileRenderer: React.FC<ProfileRendererProps> = ({ result, filteredProfi
     <div key={result.docid} style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
       {/* Search Result Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-        <h4 style={{ margin: '0', color: '#fff' }}>Score: {result.score}/4</h4>
+        <h4 style={{ margin: '0', color: '#fff' }}>
+          Score: {result.score === null || result.score === undefined ? '-' : result.score}/4
+        </h4>
         <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>ID: {result.docid}</span>
       </div>
       
