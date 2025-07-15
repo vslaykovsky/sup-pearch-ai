@@ -67,7 +67,7 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
     triggerOnce: true
   });
 
-  const [queryText, setQueryText] = useState('Seeking a CEO who co-founded a $1B startup');
+  const [queryText, setQueryText] = useState('Software engineer from new york');
   const [leftTab, setLeftTab] = useState<'text' | 'curl' | 'python'>('text');
   const [rightTab, setRightTab] = useState<'rendered' | 'json'>('rendered');
   const [isSearching, setIsSearching] = useState(false);
@@ -250,7 +250,7 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
   // Function to filter profile data based on search results settings
   const getFilteredProfile = (profile: any) => {
     if (!profile) return null;
-    
+    console.log('profile', profile);
     const searchResultsSettings: SearchResults = settings?.searchResults || {};
     
     // Start with basic profile structure
@@ -259,14 +259,18 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
       first_name: profile.first_name,
       last_name: profile.last_name,
       title: profile.title,
+      score: profile.score,
     };
     
     // Add additional fields based on search results settings
     
     // 1. Profile filter: if enabled, add profile fields
-    if (searchResultsSettings.profile) {
+    if (searchResultsSettings.profile || searchResultsSettings.enrichedCompanyData) {
       filteredProfile = {
-        ...filteredProfile,
+        ...profile,
+        insights: null,
+        emails: null,
+        phoneNumbers: null,
         experiences: profile.experiences ? profile.experiences.map((exp: any) => {
           const { company_info, ...rest } = exp;
           return rest;
@@ -286,10 +290,9 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
         }));
       }
     }
-    
     // 3. Matching insights filter: if enabled, add insighter field
-    if (searchResultsSettings.matchingInsights && profile.insighter) {
-      filteredProfile.insighter = profile.insighter;
+    if (searchResultsSettings.matchingInsights && profile.insights) {
+      filteredProfile.insights = profile.insights;
     }
     
     // 4. Handle emails filter
@@ -335,7 +338,7 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
     if (searchResultsSettings.phoneNumbers && profile.phoneNumbers) {
       filteredProfile.phoneNumbers = profile.phoneNumbers;
     }
-    
+    console.log('filteredProfile', filteredProfile);
     return filteredProfile;
   };
 
@@ -346,7 +349,8 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
     const requestBody: any = {
       query: queryText,
       limit: limit,
-      with_contacts: true
+      'require_emails': true,
+      'require_phone_numbers': true,
     };
 
     // Set type and custom_filters based on search speed mode
@@ -356,15 +360,15 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
       requestBody.type = 'fast';
       requestBody.custom_filters = [];
       requestBody.profile_scoring = false;
-      requestBody.insights = true;
+      requestBody.insights = settings?.searchSpeed?.enableInsights || true;
     } else if (searchSpeedMode === 'fast') {
       requestBody.type = 'fast';
       requestBody.profile_scoring = true;
-      requestBody.insights = true;
+      requestBody.insights = settings?.searchSpeed?.enableInsights || true;
     } else {
       requestBody.type = 'pro';
       requestBody.profile_scoring = true;
-      requestBody.insights = true;
+      requestBody.insights = settings?.searchSpeed?.enableInsights || true;
     }
 
     // Add pick_top1 for actual search (not for code generation)
@@ -617,7 +621,27 @@ print(results)`;
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              {isSearching ? 'Cancel' : 'Search'}
+              {isSearching ? (
+                <>
+                  <svg 
+                    style={{ 
+                      width: '16px', 
+                      height: '16px', 
+                      marginRight: '8px',
+                      animation: 'spin 1s linear infinite'
+                    }} 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2"
+                  >
+                    <path d="M21 12a9 9 0 11-6.219-8.56" />
+                  </svg>
+                  Cancel
+                </>
+              ) : (
+                'Search'
+              )}
             </SearchButton>
           </>
         );

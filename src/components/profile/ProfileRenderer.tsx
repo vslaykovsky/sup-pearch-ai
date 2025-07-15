@@ -21,17 +21,17 @@ const ProfileRenderer: React.FC<ProfileRendererProps> = ({ result, filteredProfi
       
        
       {/* Insights Display */}
-      {result.insighter && (
+      {result.insights && (
         <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
           <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Overall Summary</h6>
           <p style={{ margin: '0 0 0.75rem 0', opacity: 0.9, fontSize: '0.85rem', lineHeight: '1.4' }}>
-            {result.insighter.overall_summary}
+            {result.insights.overall_summary}
           </p>
           
-          {result.insighter.query_insights && result.insighter.query_insights.length > 0 && (
+          {result.insights.query_insights && result.insights.query_insights.length > 0 && (
             <div>
               <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Query Insights</h6>
-              {result.insighter.query_insights.map((insight: any, insightIdx: number) => (
+              {result.insights.query_insights.map((insight: any, insightIdx: number) => (
                 <div key={insightIdx} style={{ marginBottom: '0.75rem', padding: '0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '4px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                     <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#fff' }}>{insight.match_level}</span>
