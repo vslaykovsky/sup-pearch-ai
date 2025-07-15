@@ -8,7 +8,6 @@ import {
   CloseButton,
   ApiEndpointsSection,
   ApiEndpointsTitle,
-  ApiEndpointsDescription,
   CheckboxContainer,
   Checkbox,
   CheckboxLabel
@@ -25,7 +24,7 @@ const SearchResultsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleSearchResultOptionChange = (option: 'linkedinProfileUrl' | 'fullJson' | 'matchingInsights' | 'enrichedCompanyData' | 'enrichedProfile' | 'businessEmails' | 'personalEmails' | 'phoneNumbers', checked: boolean) => {
+  const handleSearchResultOptionChange = (option:  'matchingInsights' | 'enrichedCompanyData' | 'profile' | 'businessEmails' | 'personalEmails' | 'phoneNumbers', checked: boolean) => {
     const newSettings = {
       ...settings,
       searchResults: {
@@ -85,30 +84,6 @@ const SearchResultsModal: React.FC<SettingsModalProps> = ({
               <CheckboxContainer>
                 <Checkbox
                   type="checkbox"
-                  id="linkedinProfileUrl"
-                  checked={settings.searchResults?.linkedinProfileUrl ?? true}
-                  onChange={(e) => handleSearchResultOptionChange('linkedinProfileUrl', e.target.checked)}
-                />
-                <CheckboxLabel htmlFor="linkedinProfileUrl">
-                  🔗 LinkedIn Profile URL
-                </CheckboxLabel>
-              </CheckboxContainer>
-              
-              <CheckboxContainer>
-                <Checkbox
-                  type="checkbox"
-                  id="fullJson"
-                  checked={settings.searchResults?.fullJson ?? false}
-                  onChange={(e) => handleSearchResultOptionChange('fullJson', e.target.checked)}
-                />
-                <CheckboxLabel htmlFor="fullJson">
-                  📄 Full JSON
-                </CheckboxLabel>
-              </CheckboxContainer>
-              
-              <CheckboxContainer>
-                <Checkbox
-                  type="checkbox"
                   id="matchingInsights"
                   checked={settings.searchResults?.matchingInsights ?? true}
                   onChange={(e) => handleSearchResultOptionChange('matchingInsights', e.target.checked)}
@@ -133,12 +108,12 @@ const SearchResultsModal: React.FC<SettingsModalProps> = ({
               <CheckboxContainer>
                 <Checkbox
                   type="checkbox"
-                  id="enrichedProfile"
-                  checked={settings.searchResults?.enrichedProfile ?? true}
-                  onChange={(e) => handleSearchResultOptionChange('enrichedProfile', e.target.checked)}
+                  id="profile"
+                  checked={settings.searchResults?.profile ?? true}
+                  onChange={(e) => handleSearchResultOptionChange('profile', e.target.checked)}
                 />
-                <CheckboxLabel htmlFor="enrichedProfile">
-                  👤 Enriched Profile
+                <CheckboxLabel htmlFor="profile">
+                  👤 Linkedin Profile
                 </CheckboxLabel>
               </CheckboxContainer>
               

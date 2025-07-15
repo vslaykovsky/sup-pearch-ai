@@ -184,6 +184,32 @@ const QuerySetupModal: React.FC<SettingsModalProps> = ({
                 Choose the balance between speed and quality for your searches
               </ApiEndpointsDescription>
               
+              <CheckboxContainer style={{ marginBottom: '1rem' }}>
+                <Checkbox
+                  type="checkbox"
+                  id="enableInsights"
+                  checked={settings.searchSpeed?.enableInsights ?? true}
+                  onChange={(e) => {
+                    const newSettings = {
+                      ...settings,
+                      searchSpeed: {
+                        ...settings.searchSpeed,
+                        enableInsights: e.target.checked
+                      }
+                    };
+                    onSettingsChange(newSettings);
+                    
+                    // Save to localStorage
+                    setIsSaving(true);
+                    saveSettingsToStorage(newSettings);
+                    setTimeout(() => setIsSaving(false), 1000);
+                  }}
+                />
+                <CheckboxLabel htmlFor="enableInsights">
+                  💡 Enable Insights
+                </CheckboxLabel>
+              </CheckboxContainer>
+              
               <RadioGroup>
                 <RadioContainer>
                   <RadioInput

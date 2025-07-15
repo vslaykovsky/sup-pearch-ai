@@ -17,4 +17,7 @@ export { default as SettingsModal } from './settings/SettingsModal';
 export { default as QuerySetupModal } from './settings/QuerySetupModal';
 export { default as SearchResultsModal } from './settings/SearchResultsModal';
 export { default as CostStructureModal } from './settings/CostStructureModal';
-export { default as ApiEndpointsModal } from './settings/ApiEndpointsModal'; 
+export { default as ApiEndpointsModal } from './settings/ApiEndpointsModal';
+
+// Profile Components
+export * from './profile'; 

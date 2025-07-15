@@ -20,43 +20,27 @@ export interface ApiEndpointGroups {
   profileEnrichment: boolean;
 }
 
-// Profile Display Settings interface
-export interface ProfileDisplaySettings {
-  mode: 'linkedin_only' | 'contacts' | 'full_profile';
-}
-
-// Natural Language Mode interface
-export interface NaturalLanguageMode {
-  mode: 'simple' | 'advanced' | 'expert';
-}
-
-// Filter Mode interface
-export interface FilterMode {
-  mode: 'basic' | 'advanced' | 'custom';
-}
-
+ 
 // Query Options interface
 export interface QueryOptions {
   naturalLanguage: boolean;
   filters: boolean;
-  filterMode?: FilterMode;
 }
 
 // Search Speed interface
 export interface SearchSpeed {
   mode: 'super_fast' | 'fast' | 'deep_research' | 'auto_mode' | 'custom';
+  enableInsights?: boolean;
 }
 
 // Search Results interface
 export interface SearchResults {
-  linkedinProfileUrl: boolean;
-  fullJson: boolean;
-  matchingInsights: boolean;
-  enrichedCompanyData: boolean;
-  enrichedProfile: boolean;
-  businessEmails: boolean;
-  personalEmails: boolean;
-  phoneNumbers: boolean;
+  profile?: boolean;
+  enrichedCompanyData?: boolean;
+  matchingInsights?: boolean;
+  businessEmails?: boolean;
+  personalEmails?: boolean;
+  phoneNumbers?: boolean;
 }
 
 // Settings interface
@@ -68,7 +52,6 @@ export interface AppSettings {
   theme: string;
   packages: PackagesConfig;
   apiEndpointGroups: ApiEndpointGroups;
-  profileDisplay: ProfileDisplaySettings;
   queryOptions: QueryOptions;
   searchSpeed: SearchSpeed;
   searchResults: SearchResults;

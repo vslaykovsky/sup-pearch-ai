@@ -67,22 +67,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     setTimeout(() => setIsSaving(false), 1000);
   };
 
-  const handleProfileDisplayChange = (mode: 'linkedin_only' | 'contacts' | 'full_profile') => {
-    const newSettings = {
-      ...settings,
-      profileDisplay: {
-        ...settings.profileDisplay,
-        mode
-      }
-    };
-    onSettingsChange(newSettings);
-    
-    // Save to localStorage
-    setIsSaving(true);
-    saveSettingsToStorage(newSettings);
-    setTimeout(() => setIsSaving(false), 1000);
-  };
-
   const handlePackageChange = (packageKey: keyof PackagesConfig, field: keyof PackageConfig, value: string | number) => {
     const newPackageSettings = {
       ...packageSettings,
@@ -167,7 +151,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             <ApiEndpointsSection>
               <ApiEndpointsTitle>API Endpoint Groups</ApiEndpointsTitle>
               <ApiEndpointsDescription>
-                Select which API endpoint groups to display on the API Endpoints slide
+                Select which API endpoint groups to include in your search queries
               </ApiEndpointsDescription>
               
               <CheckboxContainer>
@@ -178,7 +162,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   onChange={(e) => handleApiEndpointGroupChange('search', e.target.checked)}
                 />
                 <CheckboxLabel htmlFor="search">
-                  🔍 Search APIs (Fast, Pro, Auto)
+                  🔍 Search
                 </CheckboxLabel>
               </CheckboxContainer>
               
@@ -202,7 +186,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   onChange={(e) => handleApiEndpointGroupChange('customIndex', e.target.checked)}
                 />
                 <CheckboxLabel htmlFor="customIndex">
-                  🗂️ Custom Index Management
+                  📊 Custom Index
                 </CheckboxLabel>
               </CheckboxContainer>
               
@@ -217,60 +201,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   👤 Profile Enrichment
                 </CheckboxLabel>
               </CheckboxContainer>
-            </ApiEndpointsSection>
-
-            <ApiEndpointsSection style={{ borderTop: '2px solid #f0f0f0' }}>
-              <ApiEndpointsTitle>Profile Display Settings</ApiEndpointsTitle>
-              <ApiEndpointsDescription>
-                Select what parts of profiles to show in search results
-              </ApiEndpointsDescription>
-              
-              <RadioGroup>
-                <RadioContainer>
-                  <RadioInput
-                    type="radio"
-                    id="linkedin_only"
-                    name="profileDisplay"
-                    value="linkedin_only"
-                    checked={settings.profileDisplay.mode === 'linkedin_only'}
-                    onChange={() => handleProfileDisplayChange('linkedin_only')}
-                  />
-                  <RadioLabel htmlFor="linkedin_only">
-                    LinkedIn ID Only
-                    <RadioDescription>Show only the LinkedIn profile URL</RadioDescription>
-                  </RadioLabel>
-                </RadioContainer>
-                
-                <RadioContainer>
-                  <RadioInput
-                    type="radio"
-                    id="contacts"
-                    name="profileDisplay"
-                    value="contacts"
-                    checked={settings.profileDisplay.mode === 'contacts'}
-                    onChange={() => handleProfileDisplayChange('contacts')}
-                  />
-                  <RadioLabel htmlFor="contacts">
-                    Contacts
-                    <RadioDescription>Show basic info and contact details (email, phone, LinkedIn)</RadioDescription>
-                  </RadioLabel>
-                </RadioContainer>
-                
-                <RadioContainer>
-                  <RadioInput
-                    type="radio"
-                    id="full_profile"
-                    name="profileDisplay"
-                    value="full_profile"
-                    checked={settings.profileDisplay.mode === 'full_profile'}
-                    onChange={() => handleProfileDisplayChange('full_profile')}
-                  />
-                  <RadioLabel htmlFor="full_profile">
-                    Full Profile
-                    <RadioDescription>Show complete profile including experience, education, skills, publications, and patents</RadioDescription>
-                  </RadioLabel>
-                </RadioContainer>
-              </RadioGroup>
             </ApiEndpointsSection>
 
             <PricingSection>

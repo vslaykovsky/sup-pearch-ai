@@ -35,25 +35,17 @@ export const defaultSettings: AppSettings = {
     customIndex: true,
     profileEnrichment: true
   },
-  profileDisplay: {
-    mode: 'full_profile'
-  },
   queryOptions: {
     naturalLanguage: true,
-    filters: true,
-    filterMode: {
-      mode: 'basic'
-    }
+    filters: true
   },
   searchSpeed: {
     mode: 'fast'
   },
   searchResults: {
-    linkedinProfileUrl: true,
-    fullJson: false,
     matchingInsights: true,
     enrichedCompanyData: true,
-    enrichedProfile: true,
+    profile: true,
     businessEmails: true,
     personalEmails: false,
     phoneNumbers: true
@@ -84,31 +76,27 @@ export const loadSettingsFromStorage = (): AppSettings => {
       const mergedSettings = {
         ...defaultSettings,
         ...parsedSettings,
-              // Ensure nested objects are properly merged
-      packages: {
-        ...defaultSettings.packages,
-        ...parsedSettings.packages
-      },
-      apiEndpointGroups: {
-        ...defaultSettings.apiEndpointGroups,
-        ...parsedSettings.apiEndpointGroups
-      },
-      profileDisplay: {
-        ...defaultSettings.profileDisplay,
-        ...parsedSettings.profileDisplay
-      },
-      queryOptions: {
-        ...defaultSettings.queryOptions,
-        ...parsedSettings.queryOptions
-      },
-      searchSpeed: {
-        ...defaultSettings.searchSpeed,
-        ...parsedSettings.searchSpeed
-      },
-      searchResults: {
-        ...defaultSettings.searchResults,
-        ...parsedSettings.searchResults
-      }
+        // Ensure nested objects are properly merged
+        packages: {
+          ...defaultSettings.packages,
+          ...parsedSettings.packages
+        },
+        apiEndpointGroups: {
+          ...defaultSettings.apiEndpointGroups,
+          ...parsedSettings.apiEndpointGroups
+        },
+        queryOptions: {
+          ...defaultSettings.queryOptions,
+          ...parsedSettings.queryOptions
+        },
+        searchSpeed: {
+          ...defaultSettings.searchSpeed,
+          ...parsedSettings.searchSpeed
+        },
+        searchResults: {
+          ...defaultSettings.searchResults,
+          ...parsedSettings.searchResults
+        }
       };
       
       console.log('📋 Settings loaded from localStorage:', mergedSettings);

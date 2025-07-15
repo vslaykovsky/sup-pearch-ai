@@ -36,7 +36,10 @@ interface AppSettings {
   theme: string;
   packages: PackagesConfig;
   apiEndpointGroups: ApiEndpointGroups;
-  profileDisplay: ProfileDisplaySettings;
+  queryOptions: QueryOptions;
+  searchSpeed: SearchSpeed;
+  searchResults: SearchResults;
+  resultLimit?: number;
 }
 ```
 
