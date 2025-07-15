@@ -117,6 +117,25 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
 
   const filterOptions = getFilterOptions();
 
+  // Function to get readable name for search speed mode
+  const getSearchSpeedReadableName = (mode: string | undefined) => {
+    if (!mode) return 'Unknown';
+    switch (mode) {
+      case 'super_fast':
+        return 'Super Fast';
+      case 'fast':
+        return 'Fast';
+      case 'deep_research':
+        return 'Deep Research';
+      case 'auto_mode':
+        return 'Auto Mode';
+      case 'custom':
+        return 'Custom';
+      default:
+        return mode;
+    }
+  };
+
   React.useEffect(() => {
     if (inView) {
       onSlideChange(index);
@@ -265,20 +284,20 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
     switch (displayMode) {
       case 'linkedin_only':
         filteredProfile = {
-          name: profile.name,
-          title: profile.title,
-          linkedin: profile.linkedin
+          name: `${profile.first_name || ''} ${profile.last_name || ''}`,
+          title: profile.experiences?.[0]?.company_roles?.[0]?.title || 'Professional',
+          linkedin: profile.docid ? `linkedin.com/in/${profile.docid}` : ''
         };
         break;
       case 'contacts':
         filteredProfile = {
-          name: profile.name,
-          title: profile.title,
-          summary: profile.summary,
-          location: profile.location,
-          email: profile.email,
-          phone: profile.phone,
-          linkedin: profile.linkedin
+          name: `${profile.first_name || ''} ${profile.last_name || ''}`,
+          title: profile.experiences?.[0]?.company_roles?.[0]?.title || 'Professional',
+          summary: profile.experiences?.[0]?.company_roles?.[0]?.experience_summary || '',
+          location: profile.experiences?.[0]?.company_roles?.[0]?.location || '',
+          email: profile.contact_data?.email || '',
+          phone: '',
+          linkedin: profile.docid ? `linkedin.com/in/${profile.docid}` : ''
         };
         break;
       case 'full_profile':
@@ -287,40 +306,40 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
         break;
     }
     
-          // Then apply search results settings filtering
-      if (displayMode !== 'linkedin_only') {
-        // Filter LinkedIn Profile URL
-        if (!searchResultsSettings.linkedinProfileUrl) {
-          delete filteredProfile.linkedin;
+    // Then apply search results settings filtering
+    if (displayMode !== 'linkedin_only') {
+      // Filter LinkedIn Profile URL
+      if (!searchResultsSettings.linkedinProfileUrl) {
+        delete filteredProfile.docid;
+      }
+      
+      // Filter enriched profile sections
+      if (!searchResultsSettings.enrichedProfile) {
+        // Remove enriched profile sections
+        delete filteredProfile.experiences;
+        delete filteredProfile.educations;
+        delete filteredProfile.awards;
+      }
+      
+      // Filter enriched company data
+      if (!searchResultsSettings.enrichedCompanyData) {
+        // Remove company info from experiences
+        if (filteredProfile.experiences) {
+          filteredProfile.experiences = filteredProfile.experiences.map((exp: any) => ({
+            ...exp,
+            company_info: undefined
+          }));
         }
-        
-        // Filter enriched profile sections
-        if (!searchResultsSettings.enrichedProfile) {
-          // Remove enriched profile sections
-          delete filteredProfile.work_experience;
-          delete filteredProfile.education;
-          delete filteredProfile.skills;
-          delete filteredProfile.publications;
-          delete filteredProfile.patents;
-          delete filteredProfile.summary;
-        }
-        
-        // Filter enriched company data
-        if (!searchResultsSettings.enrichedCompanyData) {
-          delete filteredProfile.company_data;
-          delete filteredProfile.company_info;
-        }
-        
-        // Filter matching insights
-        if (!searchResultsSettings.matchingInsights) {
-          delete filteredProfile.matching_score;
-          delete filteredProfile.matching_reasons;
-          delete filteredProfile.insights;
-        }
+      }
+      
+      // Filter matching insights
+      if (!searchResultsSettings.matchingInsights) {
+        delete filteredProfile.insighter;
+      }
       
       // Filter email types
-      if (filteredProfile.email) {
-        const email = filteredProfile.email.toLowerCase();
+      if (filteredProfile.contact_data?.email) {
+        const email = filteredProfile.contact_data.email.toLowerCase();
         const isBusinessEmail = email.includes('@') && (
           email.includes('gmail.com') === false && 
           email.includes('yahoo.com') === false && 
@@ -330,15 +349,15 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
         );
         
         if (isBusinessEmail && !searchResultsSettings.businessEmails) {
-          delete filteredProfile.email;
+          delete filteredProfile.contact_data.email;
         } else if (!isBusinessEmail && !searchResultsSettings.personalEmails) {
-          delete filteredProfile.email;
+          delete filteredProfile.contact_data.email;
         }
       }
       
-      // Filter phone numbers
-      if (filteredProfile.phone && !searchResultsSettings.phoneNumbers) {
-        delete filteredProfile.phone;
+      // Filter personal emails
+      if (filteredProfile.contact_data?.personal_emails && !searchResultsSettings.personalEmails) {
+        delete filteredProfile.contact_data.personal_emails;
       }
     }
     
@@ -347,7 +366,7 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
 
   // Function to get filtered search results for JSON output
   const getFilteredSearchResults = () => {
-    if (!searchResults) return null;
+    if (!rawApiResponse) return null;
     
     const searchResultsSettings: SearchResults = settings?.searchResults || {
       linkedinProfileUrl: true,
@@ -360,51 +379,49 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
       phoneNumbers: true
     };
     
-    let filteredResults = searchResults.results.map((result: any) => ({
-      ...result,
-      profile: result.profile ? getFilteredProfile(result.profile) : undefined
-    }));
-    
     // If full JSON is disabled, only return essential fields
     if (!searchResultsSettings.fullJson) {
-      filteredResults = filteredResults.map((result: any) => ({
-        id: result.id,
-        title: result.title,
-        content: result.content,
-        score: result.score,
-        profile: result.profile
-      }));
+      return {
+        uuid: rawApiResponse.uuid,
+        query: rawApiResponse.query,
+        status: rawApiResponse.status,
+        total_estimate: rawApiResponse.total_estimate,
+        search_results: rawApiResponse.search_results?.map((result: any) => ({
+          docid: result.docid,
+          score: result.score,
+          profile: result.profile ? getFilteredProfile(result.profile) : undefined
+        }))
+      };
     }
     
-    return {
-      ...searchResults,
-      results: filteredResults
-    };
+    return rawApiResponse;
   };
 
-  const generateCurlCommand = () => {
-    // Build request body with filters
+  // Function to build request body based on search speed settings
+  const buildRequestBody = (limit: number = 30) => {
     const requestBody: any = {
       query: queryText,
-      limit: 1,
-      type: 'fast',
+      limit: limit,
       with_contacts: true
     };
 
-    // Add natural language processing mode if enabled
-    if (settings?.queryOptions?.naturalLanguage) {
-      const nlMode = settings.queryOptions.naturalLanguageMode?.mode || 'advanced';
-      switch (nlMode) {
-        case 'simple':
-          requestBody.natural_language_mode = 'basic';
-          break;
-        case 'advanced':
-          requestBody.natural_language_mode = 'enhanced';
-          break;
-        case 'expert':
-          requestBody.natural_language_mode = 'expert';
-          break;
-      }
+    // Set type and custom_filters based on search speed mode
+    const searchSpeedMode = settings?.searchSpeed?.mode || 'fast';
+    
+    if (searchSpeedMode === 'super_fast') {
+      requestBody.type = 'fast';
+      requestBody.custom_filters = [];
+      requestBody.profile_scoring = false;
+    } else if (searchSpeedMode === 'fast') {
+      requestBody.type = 'fast';
+      requestBody.profile_scoring = true;
+    } else {
+      requestBody.type = 'pro';
+    }
+
+    // Add pick_top1 for actual search (not for code generation)
+    if (limit > 1) {
+      requestBody.pick_top1 = true;
     }
 
     // Add filters if any exist and filters are enabled
@@ -414,6 +431,13 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
         requestBody.filters = filters;
       }
     }
+
+    return requestBody;
+  };
+
+  const generateCurlCommand = () => {
+    // Build request body with filters
+    const requestBody = buildRequestBody(1);
 
     const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
     const curlCode = `curl -X POST "${apiUrl}" \\
@@ -431,36 +455,7 @@ const PearchQuerySlide: React.FC<SlideProps> = ({
 
   const generatePythonCode = () => {
     // Build request body with filters
-    const requestBody: any = {
-      query: queryText,
-      limit: 1,
-      type: 'fast',
-      with_contacts: true
-    };
-
-    // Add natural language processing mode if enabled
-    if (settings?.queryOptions?.naturalLanguage) {
-      const nlMode = settings.queryOptions.naturalLanguageMode?.mode || 'advanced';
-      switch (nlMode) {
-        case 'simple':
-          requestBody.natural_language_mode = 'basic';
-          break;
-        case 'advanced':
-          requestBody.natural_language_mode = 'enhanced';
-          break;
-        case 'expert':
-          requestBody.natural_language_mode = 'expert';
-          break;
-      }
-    }
-
-    // Add filters if any exist and filters are enabled
-    if (settings?.queryOptions?.filters) {
-      const filters = buildFiltersForRequest();
-      if (Object.keys(filters).length > 0) {
-        requestBody.filters = filters;
-      }
-    }
+    const requestBody = buildRequestBody(1);
 
     const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
     const pythonCode = `import requests
@@ -484,96 +479,15 @@ print(results)`;
     }
   };
 
-  // Transform API response to match our expected format
-  const transformApiResponse = (apiData: any[]) => {
-    // Handle empty or null data gracefully
-    if (!apiData || apiData.length === 0) {
-      return {
-        query: queryText,
-        total_results: 0,
-        results: []
-      };
-    }
-    
-    return {
-      query: queryText,
-      total_results: apiData.length,
-      results: apiData.map((profile, index) => ({
-        id: profile.docid || `profile_${index}`,
-        title: `${profile.first_name} ${profile.last_name} - ${profile.title}`,
-        content: profile.title || 'Professional profile',
-        score: 0.95, // API doesn't provide score, using default
-        metadata: {
-          author: `${profile.first_name} ${profile.last_name}`,
-          date: new Date().toISOString().split('T')[0],
-          type: "professional_profile"
-        },
-        profile: {
-          name: `${profile.first_name} ${profile.last_name}`,
-          title: profile.title,
-          summary: profile.title,
-          location: profile.location,
-          email: profile.emails?.[0] || '',
-          phone: '',
-          linkedin: profile.linkedin_slug ? `linkedin.com/in/${profile.linkedin_slug}` : '',
-          work_experience: profile.experiences?.map((exp: any) => ({
-            company: exp.company_info?.name || 'Unknown Company',
-            position: exp.company_roles?.[0]?.title || 'Unknown Position',
-            duration: `${exp.company_roles?.[0]?.duration_years || 0} years`,
-            description: exp.company_roles?.[0]?.experience_summary || ''
-          })) || [],
-          education: profile.educations?.map((edu: any) => ({
-            institution: edu.campus || 'Unknown Institution',
-            degree: 'Education',
-            duration: `${edu.start_date} - ${edu.end_date}`,
-            focus: 'Education'
-          })) || [],
-          skills: profile.experiences?.flatMap((exp: any) => 
-            exp.company_roles?.[0]?.experience_summary?.split(',').map((skill: string) => skill.trim()) || []
-          ).slice(0, 10) || [],
-          publications: [],
-          patents: []
-        }
-      }))
-    };
-  };
+  // Store raw API response without transformation
+  const [rawApiResponse, setRawApiResponse] = useState<any>(null);
 
   const handleSearch = async () => {
     setIsSearching(true);
     setError(null);
     
     // Build request body with filters
-    const requestBody: any = {
-      query: queryText,
-      limit: 30,
-      type: 'fast',
-      pick_top1: true,
-      with_contacts: true
-    };
-
-    // Add natural language processing mode if enabled
-    if (settings?.queryOptions?.naturalLanguage) {
-      const nlMode = settings.queryOptions.naturalLanguageMode?.mode || 'advanced';
-      switch (nlMode) {
-        case 'simple':
-          requestBody.natural_language_mode = 'basic';
-          break;
-        case 'advanced':
-          requestBody.natural_language_mode = 'enhanced';
-          break;
-        case 'expert':
-          requestBody.natural_language_mode = 'expert';
-          break;
-      }
-    }
-
-    // Add filters if any exist and filters are enabled
-    if (settings?.queryOptions?.filters) {
-      const filters = buildFiltersForRequest();
-      if (Object.keys(filters).length > 0) {
-        requestBody.filters = filters;
-      }
-    }
+    const requestBody = buildRequestBody(1);
     
     try {
       const apiUrl = process.env.REACT_APP_PEARCH_API_URL || 'https://api.pearch.ai/v1/search';
@@ -591,9 +505,8 @@ print(results)`;
       }
       
       const data = await response.json();
-      console.log('API Response:', data); // Debug log
-      const transformedData = transformApiResponse(data);
-      setSearchResults(transformedData);
+      setRawApiResponse(data);
+      setSearchResults(data);
     } catch (error) {
       console.error('Search error:', error);
       setError(error instanceof Error ? error.message : 'An error occurred during search');
@@ -780,6 +693,7 @@ print(results)`;
       );
     }
 
+    console.log('searchResults', searchResults);
     if (!searchResults) {
       return (
         <RenderedResult>
@@ -791,10 +705,10 @@ print(results)`;
     }
 
     // Handle empty results
-    if (searchResults.total_results === 0) {
+    if (!searchResults.search_results || searchResults.search_results.length === 0) {
       return (
         <RenderedResult>
-          <h3>Search Results for "{queryText}"</h3>
+          <h3>Search Results for "{searchResults.query}"</h3>
           <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.7 }}>
             <p>No results found for your search query.</p>
             <p>Try adjusting your search terms or filters.</p>
@@ -807,111 +721,183 @@ print(results)`;
       case 'rendered':
         return (
           <RenderedResult>
-            <h3>Search Results for "{queryText}"</h3>
-            <p>Found {searchResults.total_results} results</p>
-            {searchResults.results.map((result: any, idx: number) => {
+
+            
+            {searchResults.search_results.map((result: any, idx: number) => {
               const filteredProfile = result.profile ? getFilteredProfile(result.profile) : null;
               
               return (
-                <div key={result.id} style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
-                  <h4 style={{ margin: '0 0 0.5rem 0', color: '#fff' }}>{result.title}</h4>
-                  <p style={{ margin: '0 0 0.5rem 0', opacity: 0.9 }}>{result.content.substring(0, 150)}...</p>
-                  <div style={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                    <span>Score: {(result.score * 100).toFixed(1)}%</span>
-                    <span style={{ marginLeft: '1rem' }}>By: {result.metadata.author}</span>
-                    <span style={{ marginLeft: '1rem' }}>Type: {result.metadata.type}</span>
+                <div key={result.docid} style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <h4 style={{ margin: '0', color: '#fff' }}>Score: {result.score}/4</h4>
+                    <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>ID: {result.docid}</span>
                   </div>
+                  
+                  {/* Insights Display */}
+                  {result.insighter && (
+                    <div style={{ marginBottom: '1rem', padding: '0.75rem', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Overall Summary</h6>
+                      <p style={{ margin: '0 0 0.75rem 0', opacity: 0.9, fontSize: '0.85rem', lineHeight: '1.4' }}>
+                        {result.insighter.overall_summary}
+                      </p>
+                      
+                      {result.insighter.query_insights && result.insighter.query_insights.length > 0 && (
+                        <div>
+                          <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Query Insights</h6>
+                          {result.insighter.query_insights.map((insight: any, insightIdx: number) => (
+                            <div key={insightIdx} style={{ marginBottom: '0.75rem', padding: '0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '4px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#fff' }}>{insight.match_level}</span>
+                                <span style={{ fontSize: '0.75rem', opacity: 0.7, background: 'rgba(255,255,255,0.1)', padding: '0.1rem 0.3rem', borderRadius: '3px' }}>
+                                  {insight.priority}
+                                </span>
+                              </div>
+                              <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.8rem', opacity: 0.9 }}>{insight.short_rationale}</p>
+                              <p style={{ margin: '0', fontSize: '0.75rem', opacity: 0.7, fontStyle: 'italic' }}>{insight.subquery}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   {/* Professional Profile Display */}
                   {filteredProfile && (
-                    <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
                         <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'linear-gradient(135deg, #667eea, #764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold', color: 'white', marginRight: '1rem' }}>
-                          {filteredProfile.name.split(' ').map((n: string) => n[0]).join('')}
+                          {`${filteredProfile.first_name || ''} ${filteredProfile.last_name || ''}`.split(' ').map((n: string) => n[0]).join('')}
                         </div>
                         <div>
-                          <h5 style={{ margin: '0 0 0.25rem 0', color: '#fff', fontSize: '1.1rem' }}>{filteredProfile.name}</h5>
-                          <p style={{ margin: '0 0 0.25rem 0', opacity: 0.9, fontSize: '0.9rem' }}>{filteredProfile.title}</p>
-                          {filteredProfile.location && (
-                            <p style={{ margin: '0', opacity: 0.7, fontSize: '0.8rem' }}>{filteredProfile.location}</p>
+                          <h5 style={{ margin: '0 0 0.25rem 0', color: '#fff', fontSize: '1.1rem' }}>
+                            {`${filteredProfile.first_name || ''} ${filteredProfile.last_name || ''}`}
+                          </h5>
+                          {filteredProfile.experiences?.[0]?.company_roles?.[0]?.title && (
+                            <p style={{ margin: '0 0 0.25rem 0', opacity: 0.9, fontSize: '0.9rem' }}>
+                              {filteredProfile.experiences[0].company_roles[0].title}
+                            </p>
+                          )}
+                          {filteredProfile.experiences?.[0]?.company_roles?.[0]?.location && (
+                            <p style={{ margin: '0', opacity: 0.7, fontSize: '0.8rem' }}>
+                              {filteredProfile.experiences[0].company_roles[0].location}
+                            </p>
                           )}
                         </div>
                       </div>
                       
-                      {filteredProfile.summary && (
-                        <p style={{ margin: '0 0 1rem 0', opacity: 0.9, fontSize: '0.9rem', lineHeight: '1.5' }}>{filteredProfile.summary}</p>
-                      )}
-                      
-                      {(filteredProfile.email || filteredProfile.phone || filteredProfile.linkedin) && (
+                      {/* Contact Information */}
+                      {filteredProfile.contact_data && (
                         <div style={{ marginBottom: '1rem', fontSize: '0.8rem', opacity: 0.8 }}>
-                          {filteredProfile.email && <div style={{ marginBottom: '0.5rem' }}>📧 {filteredProfile.email}</div>}
-                          {filteredProfile.phone && <div style={{ marginBottom: '0.5rem' }}>📱 {filteredProfile.phone}</div>}
-                          {filteredProfile.linkedin && <div style={{ marginBottom: '0.5rem' }}>💼 {filteredProfile.linkedin}</div>}
+                          {filteredProfile.contact_data.email && (
+                            <div style={{ marginBottom: '0.5rem' }}>📧 {filteredProfile.contact_data.email}</div>
+                          )}
+                          {filteredProfile.contact_data.personal_emails && (
+                            <div style={{ marginBottom: '0.5rem' }}>📧 Personal: {filteredProfile.contact_data.personal_emails}</div>
+                          )}
+                          {filteredProfile.contact_data.github_url && (
+                            <div style={{ marginBottom: '0.5rem' }}>💻 <a href={filteredProfile.contact_data.github_url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff' }}>GitHub</a></div>
+                          )}
+                          {filteredProfile.contact_data.twitter_url && (
+                            <div style={{ marginBottom: '0.5rem' }}>🐦 <a href={filteredProfile.contact_data.twitter_url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff' }}>Twitter</a></div>
+                          )}
+                          {filteredProfile.contact_data.facebook_url && (
+                            <div style={{ marginBottom: '0.5rem' }}>📘 <a href={filteredProfile.contact_data.facebook_url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff' }}>Facebook</a></div>
+                          )}
+                          {filteredProfile.docid && (
+                            <div style={{ marginBottom: '0.5rem' }}>💼 <a href={`https://linkedin.com/in/${filteredProfile.docid}`} target="_blank" rel="noopener noreferrer" style={{ color: '#fff' }}>LinkedIn</a></div>
+                          )}
                         </div>
                       )}
                       
-                      {filteredProfile.work_experience && filteredProfile.work_experience.length > 0 && (
+                      {/* Work Experience */}
+                      {filteredProfile.experiences && filteredProfile.experiences.length > 0 && (
                         <div style={{ marginBottom: '1rem' }}>
                           <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Work Experience</h6>
-                          {filteredProfile.work_experience.map((exp: any, expIdx: number) => (
+                          {filteredProfile.experiences.map((exp: any, expIdx: number) => (
                             <div key={expIdx} style={{ marginBottom: '0.75rem', paddingLeft: '1rem', borderLeft: '2px solid rgba(255,255,255,0.2)' }}>
-                              <div style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{exp.position} at {exp.company}</div>
-                              <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '0.25rem' }}>{exp.duration}</div>
-                              <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>{exp.description}</div>
+                              {exp.company_roles && exp.company_roles.map((role: any, roleIdx: number) => (
+                                <div key={roleIdx} style={{ marginBottom: '0.5rem' }}>
+                                  <div style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>
+                                    {role.title} at {exp.company_info?.name || role.company || 'Unknown Company'}
+                                  </div>
+                                  <div style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: '0.25rem' }}>
+                                    {role.duration_years} years • {role.location}
+                                  </div>
+                                  <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>{role.experience_summary}</div>
+                                  
+                                  {/* Company Info */}
+                                  {exp.company_info && (
+                                    <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '4px', fontSize: '0.75rem' }}>
+                                      <div style={{ marginBottom: '0.25rem' }}>
+                                        <strong>Industry:</strong> {exp.company_info.industries?.join(', ')}
+                                      </div>
+                                      <div style={{ marginBottom: '0.25rem' }}>
+                                        <strong>Size:</strong> {exp.company_info.num_employees_range}
+                                      </div>
+                                      <div style={{ marginBottom: '0.25rem' }}>
+                                        <strong>Founded:</strong> {exp.company_info.founded_in}
+                                      </div>
+                                      {exp.company_info.description && (
+                                        <div style={{ marginBottom: '0.25rem', opacity: 0.8 }}>
+                                          <strong>About:</strong> {exp.company_info.description}
+                                        </div>
+                                      )}
+                                      {exp.company_info.website && (
+                                        <div style={{ marginBottom: '0.25rem' }}>
+                                          <strong>Website:</strong> <a href={exp.company_info.website} target="_blank" rel="noopener noreferrer" style={{ color: '#fff' }}>{exp.company_info.website}</a>
+                                        </div>
+                                      )}
+                                      {exp.company_info.company_linkedin_url && (
+                                        <div style={{ marginBottom: '0.25rem' }}>
+                                          <strong>LinkedIn:</strong> <a href={exp.company_info.company_linkedin_url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff' }}>View Company</a>
+                                        </div>
+                                      )}
+                                      {exp.company_info.crunchbase_url && (
+                                        <div style={{ marginBottom: '0.25rem' }}>
+                                          <strong>Crunchbase:</strong> <a href={exp.company_info.crunchbase_url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff' }}>View on Crunchbase</a>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
                             </div>
                           ))}
                         </div>
                       )}
                       
-                      {filteredProfile.education && filteredProfile.education.length > 0 && (
+                      {/* Education */}
+                      {filteredProfile.educations && filteredProfile.educations.length > 0 && (
                         <div style={{ marginBottom: '1rem' }}>
                           <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Education</h6>
-                          {filteredProfile.education.map((edu: any, eduIdx: number) => (
+                          {filteredProfile.educations.map((edu: any, eduIdx: number) => (
                             <div key={eduIdx} style={{ marginBottom: '0.5rem', paddingLeft: '1rem', borderLeft: '2px solid rgba(255,255,255,0.2)' }}>
-                              <div style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{edu.degree}</div>
-                              <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>{edu.institution} • {edu.duration}</div>
-                              <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>{edu.focus}</div>
+                              <div style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{edu.major}</div>
+                              <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+                                {edu.campus} • {edu.specialization}
+                              </div>
+                              <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>
+                                {new Date(edu.start_date).getFullYear()} - {new Date(edu.end_date).getFullYear()}
+                              </div>
+                              {edu.university_linkedin_url && (
+                                <div style={{ fontSize: '0.7rem', opacity: 0.8 }}>
+                                  <a href={edu.university_linkedin_url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff' }}>
+                                    View University on LinkedIn
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
                       )}
                       
-                      {filteredProfile.skills && filteredProfile.skills.length > 0 && (
+                      {/* Awards */}
+                      {filteredProfile.awards && filteredProfile.awards.length > 0 && (
                         <div style={{ marginBottom: '1rem' }}>
-                          <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Skills</h6>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            {filteredProfile.skills.map((skill: string, skillIdx: number) => (
-                              <span key={skillIdx} style={{ 
-                                background: 'rgba(255,255,255,0.1)', 
-                                padding: '0.25rem 0.5rem', 
-                                borderRadius: '12px', 
-                                fontSize: '0.75rem',
-                                border: '1px solid rgba(255,255,255,0.2)'
-                              }}>
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {filteredProfile.publications && filteredProfile.publications.length > 0 && (
-                        <div style={{ marginBottom: '1rem' }}>
-                          <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Publications</h6>
-                          {filteredProfile.publications.map((pub: string, pubIdx: number) => (
-                            <div key={pubIdx} style={{ fontSize: '0.8rem', opacity: 0.9, marginBottom: '0.25rem' }}>
-                              • {pub}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                      
-                      {filteredProfile.patents && filteredProfile.patents.length > 0 && (
-                        <div>
-                          <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Patents</h6>
-                          {filteredProfile.patents.map((patent: string, patentIdx: number) => (
-                            <div key={patentIdx} style={{ fontSize: '0.8rem', opacity: 0.9, marginBottom: '0.25rem' }}>
-                              • {patent}
+                          <h6 style={{ margin: '0 0 0.5rem 0', color: '#fff', fontSize: '0.9rem' }}>Awards & Recognition</h6>
+                          {filteredProfile.awards.map((award: string, awardIdx: number) => (
+                            <div key={awardIdx} style={{ fontSize: '0.8rem', opacity: 0.9, marginBottom: '0.25rem' }}>
+                              🏆 {award}
                             </div>
                           ))}
                         </div>
@@ -924,8 +910,7 @@ print(results)`;
           </RenderedResult>
         );
       case 'json':
-        const filteredResults = getFilteredSearchResults();
-        if (!filteredResults) {
+        if (!rawApiResponse) {
           return (
             <JsonResult>
               <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.7 }}>
@@ -935,7 +920,9 @@ print(results)`;
           );
         }
         
-        const jsonString = JSON.stringify(filteredResults, null, 2);
+        // Use filtered results for JSON display
+        const jsonData = getFilteredSearchResults() || rawApiResponse;
+        const jsonString = JSON.stringify(jsonData, null, 2);
         try {
           const highlightedJson = Prism.highlight(jsonString, Prism.languages.json, 'json');
           return (
@@ -1017,7 +1004,7 @@ print(results)`;
               >
                 Python
               </Tab>
-            </TabContainer>
+            </TabContainer>          
             {renderLeftContent()}
           </LeftPanel>
           
@@ -1051,6 +1038,17 @@ print(results)`;
                 JSON
               </Tab>
             </TabContainer>
+            {searchResults && (
+              <p style={{ 
+                margin: '0.5rem 0 1rem 0', 
+                textAlign: 'left',
+                fontSize: '0.9rem', 
+                opacity: 0.8,
+                color: '#fff'
+              }}>
+                Mode: {getSearchSpeedReadableName(settings?.searchSpeed?.mode)}. Found {searchResults.total_estimate} results. Showing {searchResults.search_results?.length || 0} profiles
+              </p>
+            )}            
             <ResultContainer>
               {renderRightContent()}
             </ResultContainer>

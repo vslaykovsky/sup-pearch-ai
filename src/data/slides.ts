@@ -8,15 +8,15 @@ export const slides: Slide[] = [
     type: "pearch"
   },
   {
-    id: 2,
-    title: "Cost Structure & Pricing",
-    description: "Explore our flexible pricing plans and see how costs scale with your search volume.",
-    type: "cost"
-  },
-  {
     id: 3,
     title: "API Endpoints Overview",
     description: "Explore our comprehensive API suite with powerful search, job recommendations, and profile enrichment capabilities.",
     type: "api-endpoints"
+  },
+  {
+    id: 2,
+    title: "Cost Structure & Pricing",
+    description: "Explore our flexible pricing plans and see how costs scale with your search volume.",
+    type: "cost"
   }
 ]; 

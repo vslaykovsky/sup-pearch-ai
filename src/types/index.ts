@@ -39,7 +39,6 @@ export interface FilterMode {
 export interface QueryOptions {
   naturalLanguage: boolean;
   filters: boolean;
-  naturalLanguageMode?: NaturalLanguageMode;
   filterMode?: FilterMode;
 }
 

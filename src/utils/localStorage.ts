@@ -41,9 +41,6 @@ export const defaultSettings: AppSettings = {
   queryOptions: {
     naturalLanguage: true,
     filters: true,
-    naturalLanguageMode: {
-      mode: 'advanced'
-    },
     filterMode: {
       mode: 'basic'
     }
